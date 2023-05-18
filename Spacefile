@@ -1,0 +1,38 @@
+# Spacefile Docs: https://go.deta.dev/docs/spacefile/v0
+v: 0
+micros:
+  - name: MainBot
+    src: ./ChatBot/
+    engine: python3.9
+    public: true
+    path: webhook
+    presets:
+      env:
+        - name: TOKEN
+          description: Telegram Token
+          default: ""
+    public_routes:
+      - "/webhook/*"
+      - "/webhook" 
+
+  - name: Notifier
+    src: ./Notifier/
+    engine: python3.9
+    path: Notifier
+    public: true
+    actions:
+      - id: "DBReader"
+        name: "DB Reader"
+        trigger: "schedule"
+        default_interval: "0/15 * * * *"
+    presets:
+      env:
+        - name: TOKEN
+          description: Telegram Token
+          default: ""
+  - name: Web
+    src: ./web/
+    engine: python3.9
+    primary: true
+    public: true
+    
