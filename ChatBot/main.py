@@ -80,16 +80,6 @@ async def service(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         global Year
         global Semester
 
-        # today = datetime.date.today()
-        # start_spring = today.replace(today.year, 10, 1)
-        # end_spring = today.replace(today.year + 1, 2, 1)
-
-        # if today > start_spring and today < end_spring:
-        #     Year = today.year + 1
-        #     Semester = "Spring"
-        # else:
-        #     Year = today.year
-        #     Semester = "Fall"
         Semester, Year = SemDate()
 
         msg = f"The current semester is {Semester} {Year}. If the semester is correct, please select 'Yes'. To change the semester, select 'Change Semester' ."
@@ -218,9 +208,6 @@ async def add_year(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     Year = update.message.text
     await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     time.sleep(1)
-    #         msg = """Please enter the year of the course.
-    # Note that Spring courses are in the following year."""
-    #         await update.message.reply_text(msg)
     msg = "Please enter the CRNs of the courses separated by a comma. For ex: 357462,69451,54524"
     time.sleep(1)
     await update.message.reply_text(msg)
