@@ -1,0 +1,6 @@
+anyio==3.6.2
+flask
+bcrypt==3.2.0
+python-telegram-bot==20.0
+deta
+uvicorn[standard]

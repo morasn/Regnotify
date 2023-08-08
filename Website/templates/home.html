@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}" />
+    <script type="text/javascript" src="{{ url_for('static', filename='js/Drop.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home2.css') }}" />
+
+    <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home2.css') }}" /> -->
+
+    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" rel="stylesheet" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" /> -->
+
+
+</head>
+
+
+<body>
+
+    <header>
+        <img src="https://codetheweb.blog/assets/img/icon2.png">
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="{{ url_for('add_course') }}">Add Courses</a></li>
+                <li><a href="{{ url_for('scheduler') }}">Scheduler</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Welcome {{ name }}!</h1>
+        <h2>Here are your current courses:</h2>
+    </main>
+
+    <br>
+    <main>
+        <div class="container">
+            {% if courses %}
+            <h2>Your registered courses:</h2>
+
+            <form action="" method="post">
+                <table class="fl-table">
+                    <thead>
+                        <tr>
+                            <th>Course Title</th>
+                            <th>Course ID</th>
+                            <th>Instructor</th>
+                            <th>CRN</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Drop Course</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in courses %}
+
+                        <tr>
+                            <td>{{ course["Title"] }}</td>
+                            <td>{{ course["Course_ID"] }}</td>
+                            <td>{{ course["Instructor"] }}</td>
+                            <td>{{ course["CRN"] }}</td>
+                            <td>{{ course["Days"] }}</td>
+                            <td>{{ course["Time"] }}</td>
+                            <td class="trash-row">
+                                <input type="hidden" name="course_key{{loop.index}}" value="{{ course['key'] }}"
+                                    id="drop{{loop.index}}">
+                                <input class="confirm" type="submit" name="action" value="Drop"
+                                    onclick="CourseDrop('{{loop.index}}')">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+
+            {% else %}
+            <h2>You do not currently have any registered courses. Why not add a course by clicking the button below?
+            </h2>
+            {% endif %}
+
+            <!-- <button class="add-course">Add Course</button> -->
+        </div>
+    </main>
+    <!-- <script type="text/javascript" src="{{ url_for('static', filename='js/home.js') }}"></script> -->
+
+</body>
+
+</html>

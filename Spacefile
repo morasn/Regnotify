@@ -11,28 +11,39 @@ micros:
         - name: TOKEN
           description: Telegram Token
           default: ""
-    public_routes:
-      - "/webhook/*"
-      - "/webhook" 
+    # public_routes:
+    #   - "/webhook/*"
+    #   - "/webhook"
 
-  - name: Notifier
-    src: ./Notifier/
+  - name: Notifier-Sub
+    src: ./Notifier-Sub/
     engine: python3.9
-    path: Notifier
     public: true
+    path: external
     actions:
       - id: "DBReader"
         name: "DB Reader"
         trigger: "schedule"
         default_interval: "0/15 * * * *"
+
+  - name: Notifier-Main
+    src: ./Notifier-Main/
+    engine: python3.9
+    public: true
+    path: notifier
     presets:
       env:
         - name: TOKEN
           description: Telegram Token
           default: ""
+
   - name: Web
-    src: ./web/
+    src: ./Website/
     engine: python3.9
     primary: true
     public: true
-    
+    presets:
+      env:
+        - name: TOKEN
+          description: Telegram Token
+          default: ""

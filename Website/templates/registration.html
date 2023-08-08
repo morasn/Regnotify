@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Token Verification</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+
+
+<body>
+    <div class="container">
+        <!-- LOGN IN FORM by Omar Dsoky -->
+
+        <h2>Register new account</h2>
+        <!--     A welcome message or an explanation of the login form -->
+        <p>Type in your username and password below:</p>
+        {% with messages = get_flashed_messages() %}
+        {% if messages |count != 0 : %}
+        <div class="alert" role="alert">
+            {{ messages[-1] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <form id="token" class="form" method="post" action="">
+            <!--   con = Container  for items in the form-->
+            <div class="input_field" id="form">
+
+                <!--   user name Input-->
+                <input class="form-input" id="txt-input" type="text" placeholder="Username" name="username"
+                    value="{{ request.form['username'] }}" minlength="3" maxlength="15" required>
+
+                <!--   Password Input-->
+                <input class="form-input" type="password" placeholder="Password" id="pwd" name="password"
+                    value="{{ request.form['password'] }}" minlength="4" maxlength="20" required>
+
+                    <input class="form-input" type="password" placeholder="Confirm Password" id="pwd" name="confirm-password"
+                    value="{{ request.form['confirm-password'] }}" minlength="4" maxlength="20" required>
+
+
+            </div>
+            <button type="submit" name="action" value="register">Create Account</button>
+
+        </form>
+
+    </div>
+
+</body>
+
+</html>

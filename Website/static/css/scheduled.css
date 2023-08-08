@@ -1,0 +1,29 @@
+.column {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+    /* margin-bottom: 15px; */
+
+}
+
+.none {
+    display: none;
+    margin: 0%;
+    padding: 0%;
+
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}" />
+    <script type="text/javascript" src="{{ url_for('static', filename='js/Add.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home2.css') }}" />
+
+</head>
+
+
+<body>
+
+    <header>
+        <img src="https://codetheweb.blog/assets/img/icon2.png">
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('add_course') }}">Add Courses</a></li>
+                <li><a href="{{ url_for('scheduler') }}">Scheduler</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Register new courses:</h2>
+
+        <form action="" method="post">
+            <div class="input_field">
+                <div class="centerer">
+                    <label for="semester">Semester
+                        <select id="semester" name="semester" class="search__input" required>
+                            {% for semester in semesters %}
+                            <option value="{{semester}}" selected="">{{semester}}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+
+                <!-- <div class="column left-column">
+                    {% for i in range(1,9) %}
+
+                    <input type="text" placeholder="Course CRN" id="crn{{loop.index}}" class="search__input"
+                        pattern="[0-9]{5}" name="crn" oninput="CourseDetail('{{loop.index}}')">
+
+                    {% endfor %}
+                </div>
+                <div class="column right-column">
+                    {% for i in range(1,9) %}
+                    <p id="crn_detail{{loop.index}}" class="course-detail"></p>
+                    {% endfor %}
+                </div> -->
+                <div class="centerer">
+                    <table class="add_table">
+                        {% for i in range(1,9) %}
+                        <tr>
+                            <td class="add_table">
+                                <input type="text" placeholder="Course CRN" id="crn{{loop.index}}" class="search__input"
+                                    pattern="[0-9]{5}" name="crn" oninput="CourseDetail('{{loop.index}}')">
+                            </td>
+                            <td class="add_table">
+                                <p id="crn_detail{{loop.index}}" class="course-detail"></p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+                <div class="input_field">
+                    <button type="submit" name="action" value="add" class="course-name">Add Courses</button>
+                </div>
+            </div>
+        </form>
+
+    </main>

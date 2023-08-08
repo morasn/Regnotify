@@ -1,208 +1,224 @@
 from datetime import datetime
 from deta import Deta
+import os
 
-deta = Deta()
-dbBanner = deta.Base("Banner")
-dbCourses = deta.Base("Courses")
-dbUsers = deta.Base("Users")
-dbToken = deta.Base("Token")
+project = Deta()
+
+# Initialize the Credentials database
+dbCredentials = project.Base("Credentials")
+
+# Initialize the Users database
+dbUsers = project.Base("Users")
+
+# Initialize the Courses database
+dbCourses = project.Base("Courses")
+
+# Initialize the Temp database
+dbToken = project.Base("Token")
+
+# Initialize the Banner database
+dbBanner = project.Base("Banner")
+
+# Initialize the DumpData database
+dbDumpData = project.Base("DumpData")
 
 
 def current_time():
     time = datetime.now()
-    time = time.strftime("%d/%m/%Y %H:%M:%S")
+    time = time.strftime("%d/%m/%Y %H:%M:%S:%f")
     return time
 
 
+def logger(data):
+    dbLogger = project.Base("Logger")
+    try:
+        dbLogger.put(
+            {
+                "first_name": data["message"]["from"]["first_name"],
+                "username": data["message"]["from"]["username"],
+                "chat_id": data["message"]["from"]["id"],
+                "key": current_time(),
+                "text": data["message"]["text"],
+            }
+        )
+    except:
+        dbLogger.put(
+            {
+                "first_name": data["message"]["from"]["first_name"],
+                "last_name": data["message"]["from"]["last_name"],
+                "chat_id": data["message"]["from"]["id"],
+                "key": current_time(),
+                "text": data["message"]["text"],
+            }
+        )
+
+
+def IsUser(chat_id, name):
+    UserRow = dbUsers.get(chat_id)
+    if UserRow == None:
+        NewUser(chat_id, name)
+        return False
+    else:
+        return True
+
+
+def NewUser(chat_id, name):
+    dbUsers.put(
+        {
+            "Chat_ID": chat_id,
+            "Name": name,
+            "Time": current_time(),
+            "key": chat_id,
+            "Username": None,
+        }
+    )
+
+
+# ====================================================================================================
+### The Three Functions below are used for course Dropping
+def DropCheck(chat_id, name):
+    UserRow = dbCourses.fetch({"Chat_ID": chat_id})
+    if len(UserRow.items) == 0:
+        raise RuntimeError(f"User {chat_id} Has No Registered Courses to Drop")
+
+
+def DBDropCourse(type, Courses):
+    try:
+        if type == "all":
+            for course in Courses:
+                dbCourses.delete(course["key"])
+        else:
+            dbCourses.delete(Courses[type]["key"])
+    except Exception as e:
+        raise RuntimeError(str(e))
+
+
+def UserRegCourses(chat_id):
+    UserRow = dbCourses.fetch({"Chat_ID": chat_id}).items
+    if UserRow == None:
+        raise RuntimeError(f"User {chat_id} Has No Registered Courses to Drop")
+
+    BannerDetails = []
+    for course in UserRow:
+        BannerDetails.append(dbBanner.get(course["CustomSemester"]))
+    return BannerDetails, UserRow
+
+
+# ====================================================================================================
+
+
+# ====================================================================================================
+### The Two Functions below are used for course Adding
 def CourseDataExtractor(crns: str, Semester, Year, chat_id, name):
     crns = crns.split(",")
     row = []
     for crn in crns:
-        temp = dbBanner.get(f"{Semester}{Year}--{crn}")
-        temp["Chat_ID"] = chat_id
-        temp["UserName"] = name
-        temp["Semester"] = Semester
-        temp["Year"] = Year
-        row.append(temp)
+        crn = crn.strip()
+        CustomSemester = f"{Semester}{Year}--{crn}"
+
+        # To check if CRN Exists or not
+        temp = dbBanner.get(str(CustomSemester))
+        if temp == None:
+            raise RuntimeError(crn + " -Course Not Found")
+        data = {}
+
+        # Essential Variables Do not change for adding course. Again Do not change
+        data["CustomSemester"] = CustomSemester
+        data["key"] = str(current_time()) + "--" + temp["Course_ID"]
+        data["Chat_ID"] = chat_id
+
+        # Essential Vars for msg output. Again Do not change
+        data["Title"] = temp["Title"]
+        data["Course_ID"] = temp["Course_ID"]
+        data["Instructor"] = temp["Instructor"]
+        data["Section"] = temp["Section"]
+        data["Location"] = temp["Location"]
+
+        # Optional Variables that can be changed
+
+        data["Name"] = name
+        data["Semester"] = Semester
+        data["Year"] = Year
+        data["Platform"] = "ChatBot"
+        data["CRN"] = crn
+        row.append(data)
     return row
 
 
-def current_time():
-    time = datetime.now()
-    time = time.strftime("%d/%m/%Y %H:%M:%S")
-    return time
-
-
-def DBCourseLookup(crn):
-    CourseRow = dbCourses.get(crn)
-    return CourseRow
-
-
-def DBBannerLookup(crn):
-    CourseRow = dbBanner.get(crn)
-    return CourseRow
-
-
-def DBUserLookup(chat_id):
-    UserRow = dbUsers.get(str(chat_id))
-
-    return UserRow
-
-
 def DBAddCourse(Course_Info):
-    time = current_time()
-    deta = Deta()
-    dbDumpData = deta.Base("DumpData")
     dbDumpData.put_many(Course_Info)
-
-    crn = ""
-    usercrn = Course_Info[0]["key"]
-    UserRow = dbUsers.get(Course_Info[0]["Chat_ID"])
-    for course in range(len(Course_Info)):
-        CourseRow = DBCourseLookup(str(Course_Info[course]["key"]))
-        if course != 0:
-            usercrn = Course_Info[course]["key"] + "," + usercrn
-        if CourseRow == None:
-            dbCourses.put(
-                {
-                    "CRN": Course_Info[course]["CRN"],
-                    # "Semester": Course_Info[course]["Semester"],
-                    # "Year": Course_Info[course]["Year"],
-                    "Chat_IDS": Course_Info[course]["Chat_ID"],
-                    "key": Course_Info[course]["key"],
-                    # "Title": Course_Info[course]["Title"],
-                    # "Course_ID": Course_Info[course]["Course_ID"],
-                    # "Section": Course_Info[course]["Section"],
-                    "Time": time,
-                }
-            )
-
-        else:
-            crn = str(Course_Info[course]["key"]) + "," + str(crn)
-            CourseChat_IDS = (
-                str(CourseRow["Chat_IDS"]) + "," + str(Course_Info[course]["Chat_ID"])
-            )
-            dbCourses.put(
-                {
-                    "CRN": Course_Info[course]["CRN"],
-                    # "Semester": Course_Info[course]["Semester"],
-                    # "Year": Course_Info[course]["Year"],
-                    "Chat_IDS": CourseChat_IDS,
-                    "key": Course_Info[course]["key"],
-                    # "Title": Course_Info[course]["Title"],
-                    # "Course_ID": Course_Info[course]["Course_ID"],
-                    # "Section": Course_Info[course]["Section"],
-                    "Time": time,
-                }
-            )
-
-    if UserRow == None:
-        dbUsers.put(
+    for course in Course_Info:
+        dbCourses.put(
             {
-                "CHAT_ID": Course_Info[course]["Chat_ID"],
-                "UserName": Course_Info[course]["UserName"],
-                "CRN": usercrn,
-                # "Semester": Course_Info[course]["Semester"],
-                # "Year": Course_Info[course]["Year"],
-                "Time": time,
-                "key": Course_Info[course]["Chat_ID"],
-            }
+                "CustomSemester": course["CustomSemester"],
+                "key": course["key"],
+                "Chat_ID": course["Chat_ID"],
+                "CRN": course["CRN"],
+            },
+            expire_in=60 * 60 * 24 * 31 * 4,
         )
+    return True
+
+
+# ====================================================================================================
+
+
+# ====================================================================================================
+### The Functions below are used for course Web Registration
+def IsWebUser(chat_id):
+    UserRow = dbUsers.get(chat_id)
+    if UserRow["Username"] == None:
+        return False
     else:
-        usercrn = usercrn + "," + UserRow["CRN"]
-        dbUsers.put(
-            {
-                "CHAT_ID": Course_Info[course]["Chat_ID"],
-                "UserName": Course_Info[course]["UserName"],
-                "CRN": usercrn,
-                # "Semester": Course_Info[course]["Semester"],
-                # "Year": Course_Info[course]["Year"],
-                "Time": time,
-                "key": Course_Info[course]["Chat_ID"],
-            }
-        )
-
-    stat = "Success"
-    return stat
-
-
-def UserRegCourses(chat_id):
-    UserRow = DBUserLookup(chat_id=chat_id)
-    crns = str(UserRow["CRN"]).split(",")
-    UserCourses = []
-    CourseDetail = []
-    for crn in crns:
-        UserCourses.append(DBCourseLookup(crn=crn))
-        CourseDetail.append(DBBannerLookup(crn=crn))
-    return UserRow, UserCourses, CourseDetail
-
-
-def DBDropCourse(DropSelection: str, UserCourses):
-    if "all" in DropSelection:
-        DropSelection = DropSelection.split("---")[1]
-        dbUsers.delete(DropSelection)
-        for course in UserCourses:
-            chat_ids = str(course["Chat_IDS"])
-            chat_ids = chat_ids.split(",")
-            NumIDS = len(chat_ids)
-            if NumIDS == 1:
-                dbCourses.delete(course["key"])
-            else:
-                chat_ids.remove(DropSelection)
-                course["Chat_IDS"] = ",".join(chat_ids)
-                dbCourses.put(course)
-    else:
-        # Remove Course CRN from User DB
-        crn = str(DropSelection["CRN"])
-        crn = crn.split(",")
-        NumCRN = len(crn)
-        if NumCRN == 1:
-            dbUsers.delete(DropSelection["CHAT_ID"])
-        else:
-            crn.remove(UserCourses["key"])
-            DropSelection["CRN"] = ",".join(crn)
-            dbUsers.put(DropSelection)
-
-        # Remove User Chat ID from Courses DB
-        chat_ids = str(UserCourses["Chat_IDS"])
-        chat_ids = chat_ids.split(",")
-        NumIDS = len(chat_ids)
-        if NumIDS == 1:
-            dbCourses.delete(UserCourses["key"])
-        else:
-            chat_ids.remove(DropSelection["CHAT_ID"])
-            UserCourses["Chat_IDS"] = ",".join(chat_ids)
-            dbCourses.put(UserCourses)
-
-
-def DBReader():
-    res = dbCourses.fetch()
-    CoursesDB = res.items
-
-    # fetch until last is 'None'
-    while res.last:
-        res = dbCourses.fetch(last=res.last)
-        CoursesDB += res.items
-
-    return CoursesDB
+        return UserRow
 
 
 def AddLogin(chat_id, name):
-    UserRow = dbUsers.get(chat_id)
-    if UserRow["WebUser"] == None:
-        token = CreateToken(chat_id, name)
+    # try:
+    UserRow = IsWebUser(chat_id)
+    if UserRow == False:
+        token = CreateToken(chat_id, name, dbToken)
         msg = f"""Your temporary token is {token}.
 Please add it on --- to complete the registration process."""
+        return msg
     else:
-        # ResetPassword(chat_id)
-        msg = ""
-    return msg
+        msg = "You are already registered. If you wish to get your Username or reset your Password, select /Web"
+        return msg
 
 
-def CreateToken(chat_id, name):
-    token = generate_token(8)
-    row = {"key": chat_id, "Chat_ID": chat_id, "Name": name, "Token": token}
-    dbToken.put(row)
+def GetUsername(chat_id):
+    User = IsWebUser(chat_id)
+    if User == False:
+        msg = "You are not registered. Please register first."
+        return msg
+    else:
+        msg = f"Your username is {User['Username']}."
+        return msg
+
+
+def ResetPasswordToken(chat_id):
+    User = IsWebUser(chat_id)
+    if User == False:
+        msg = "You are not registered. Please register first."
+        return msg
+    else:
+        dbPasswordReset = project.Base("PasswordReset")
+        token = CreateToken(chat_id, User["Name"], dbPasswordReset)
+        msg = f"""Your temporary token is {token}.
+Note: It will expire in 24 hours."""
+        return msg
+
+
+def CreateToken(chat_id, name, db):
+    token = generate_token(4)
+    row = {
+        "key": chat_id,
+        "Chat_ID": chat_id,
+        "Name": name,
+        "Token": token,
+        "Time": current_time(),
+    }
+    db.put(row)
     return token
 
 
@@ -210,18 +226,51 @@ def generate_token(length):
     import secrets
     import string
 
-    alphabet = string.ascii_letters + string.digits
+    alphabet = string.digits
     token = "".join(secrets.choice(alphabet) for i in range(length))
     return token
 
 
+# ====================================================================================================
+
+
+# ====================================================================================================
+### The Functions below are used for course finding the alternative core courses
+def Alt_Course_Finder(day, time, category):
+    Courses = dbBanner.fetch({"Days": day, "Time": time, "Category": category}).items
+    if len(Courses) == 0:
+        msg = f"Sorry. I can not find any courses any {category} course at the requested time."
+        return msg
+    else:
+        msg = ""
+        alt = ""
+        alt_count = 0
+        for index, course in enumerate(Courses):
+            if course["Remaining"] == 0:
+                txt = f"""{alt_count + 1 }. {course["Title"]} - {course["Course_ID"]} with {course["Instructor"]} and CRN {course["CRN"]}."""
+                alt_count += 1
+                alt = alt + txt + "\n\n"
+                continue
+            txt = f"""{index + 1 }. {course["Title"]} - {course["Course_ID"]} with {course["Instructor"]} and CRN {course["CRN"]} has currently {course["Remaining"]} places available."""
+            msg = msg + txt + "\n\n"
+        if msg == "":
+            msg = f"Sorry. I can not find any courses any {category} course at the requested time.\n However, these are all the courses that are available in that period.\n\n {alt}"
+
+        return msg
+
+
+# ====================================================================================================
+
+
+# ====================================================================================================
+### The Functions below are used for detecting the current semester
 def SemDate():
     date = datetime.now()
     month = date.month
     year = date.year
     day = date.day
 
-    if (month > 0 and day > 8) and month < 3:
+    if (month > 1 and day > 8) and month < 3:
         # Spring
         Semester = "Spring"
     elif month >= 12:
@@ -231,12 +280,13 @@ def SemDate():
     elif month <= 1 and day <= 8:
         # Winter
         Semester = "Winter"
-    elif (month == 6 and day > 6) or (month >= 8 and month <= 9):
+    elif (month >= 6 and day > 6) or (month <= 9 and day <= 7):
         # Fall
         Semester = "Fall"
-        year = year + 1
 
-    elif month >= 5 or (month == 6 and day <= 6):
+    elif (month == 5) or (month == 6 and day <= 6):
         # Summer
         Semester = "Summer"
+    else:
+        raise RuntimeError("Auto Semester Detection Failed")
     return Semester, year

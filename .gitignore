@@ -3,4 +3,12 @@ googlehtml
 web
 Extra
 __pycache__
+.pytest_cache
 .vscode
+debug2.py
+webfront
+.spaceignore
+Manual Bot
+.env
+Migration
+dev.py
