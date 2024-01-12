@@ -76,8 +76,8 @@ def NewUser(chat_id, name):
 
 # ====================================================================================================
 ### The Three Functions below are used for course Dropping
-def DropCheck(chat_id, name):
-    UserRow = dbCourses.fetch({"Chat_ID": chat_id})
+def DropCheck(chat_id):
+    UserRow = dbCourses.fetch({"Chat_ID": str(chat_id)})
     if len(UserRow.items) == 0:
         raise RuntimeError(f"User {chat_id} Has No Registered Courses to Drop")
 

@@ -57,7 +57,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     IsUser(chat_id, name)
 
     try:
-        DropCheck(chat_id, name)
+        DropCheck(chat_id)
         reply_keyboard = [
             ["Add Course(s)"],
             ["Drop Course(s)"],
@@ -372,7 +372,7 @@ async def add_crn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             crns=crns,
             Semester=Semester,
             Year=Year,
-            chat_id=update.message.chat_id,
+            chat_id=str(update.message.chat_id),
             name=update.effective_chat.full_name,
         )
 

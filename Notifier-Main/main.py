@@ -52,9 +52,11 @@ async def actions(req: Request):
                         else:
                             msg = f"""{new_dict["Remaining"]} Seats are now available in the course {new_dict["Title"]} ({new_dict["Course_ID"]}) with the instructor {new_dict["Instructor"]} and section number {new_dict["Section"]}. Hurry up to reserve the course.
                 CRN is {new_dict["CRN"]} """
-
-                        await bot.send_message(chat_id=chat_id["Chat_ID"], text=msg)
-
+                        try:
+                            await bot.send_message(chat_id=chat_id["Chat_ID"], text=msg)
+                        except Exception as e:
+                            print(e)
+                            pass
         for m in range(0, len(new_db_added), 25):
             BannerDB.put_many(new_db_added[m : m + 25])
 
