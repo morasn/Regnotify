@@ -81,7 +81,7 @@ def SemDate():
     year = date.year
     day = date.day
 
-    if month > 1 and month < 3:
+    if month >= 1 and month <= 3:
         # Spring
         Semesters = [
             "Spring" + " " + str(year),
