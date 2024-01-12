@@ -9,7 +9,7 @@
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" />
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/scheduler.css') }}" />
 		<script type="text/javascript" src="{{ url_for('static', filename='js/scheduler.js') }}"></script>
-
+		<link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='images/favico.jpg') }}" />
 	</head>
 
 
@@ -32,6 +32,8 @@
 			<div class="centerer">
 				<h1>Scheduler</h1>
 				<p>Choose your courses and we will generate a schedule for you.</p>
+				<p>For each course you are free to choose your Instructor and section or leave them empty if it does not
+					matter.</p>
 				<p>Please note that hidden labs are not yet supported. To add a hidden lab, choose the lecture and lab
 					as two different courses selecting the section in both cases.</p>
 			</div>

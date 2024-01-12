@@ -1,95 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" />
-    <script type="text/javascript" src="{{ url_for('static', filename='js/Add.js') }}"></script>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/add.css') }}" />
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Home</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" />
+        <script type="text/javascript" src="{{ url_for('static', filename='js/Add.js') }}"></script>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/add.css') }}" />
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='images/favico.jpg') }}" />
+    </head>
 
-</head>
 
+    <body>
 
-<body>
+        <header>
+            <img src="{{ url_for('static', filename='images/Logo.png') }}">
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('add_course') }}">Add Courses</a></li>
+                    <li><a href="{{ url_for('scheduler') }}">Scheduler</a></li>
+                    <li><a href="{{ url_for('help') }}">Help</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </nav>
+        </header>
+        <main>
+            <h2>Register new courses:</h2>
 
-    <header>
-        <img src="{{ url_for('static', filename='images/Logo.png') }}">
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('home') }}">Home</a></li>
-                <li><a href="{{ url_for('add_course') }}">Add Courses</a></li>
-                <li><a href="{{ url_for('scheduler') }}">Scheduler</a></li>
-                <li><a href="{{ url_for('help') }}">Help</a></li>
-                <li><a href="{{ url_for('contact') }}">Contact</a></li>
-                <li><a href="{{ url_for('logout') }}">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <h2>Register new courses:</h2>
+            <form action="" method="post">
+                <div class="input_field">
+                    <div class="centerer-search">
+                        <label for="semester">Semester
+                            <select id="semester" name="semester" class="search__input" required>
+                                {% for semester in semesters %}
+                                <option value="{{semester}}" selected="">{{semester}}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </div>
 
-        <form action="" method="post">
-            <div class="input_field">
-                <div class="centerer-search">
-                    <label for="semester">Semester
-                        <select id="semester" name="semester" class="search__input" required>
-                            {% for semester in semesters %}
-                            <option value="{{semester}}" selected="">{{semester}}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
-                </div>
-
-                <div class="centerer">
-                    <div class="card-container">
-                        {% for i in range(1,9) %}
-                        {% if i > 3 %}
-                        <div class="card" id="card{{ loop.index }}" hidden>
-                            {% else %}
-                            <div class="card" id="card{{ loop.index }}">
-                                {% endif %}
-                                <div class="card-header" id="card-header{{loop.index}}">
-                                    <h2>Course {{ loop.index }}</h2>
+                    <div class="centerer">
+                        <div class="card-container">
+                            {% for i in range(1,9) %}
+                            {% if i > 3 %}
+                            <div class="card" id="card{{ loop.index }}" hidden>
+                                {% else %}
+                                <div class="card" id="card{{ loop.index }}">
+                                    {% endif %}
+                                    <div class="card-header" id="card-header{{loop.index}}">
+                                        <h2>Course {{ loop.index }}</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="crn{{ loop.index }}">Enter Course CRN</label>
+                                            {% if loop.index > 1 %}
+                                            <input type="text" class="search__input" id="crn{{ loop.index }}"
+                                                placeholder="Course CRN" pattern="[0-9]{5}" name="crn"
+                                                oninput="CourseDetail('{{ loop.index }}')" disabled>
+                                            {% else %}
+                                            <input type="text" class="search__input" id="crn{{ loop.index }}"
+                                                placeholder="Course CRN" pattern="[0-9]{5}" name="crn"
+                                                oninput="CourseDetail('{{ loop.index }}')">
+                                            {% endif %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="title{{ loop.index }}" id="title-label{{ loop.index }}"></label>
+                                            <p id="title{{ loop.index }}" class="course-detail"></p>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="section{{ loop.index }}"
+                                                id="section-label{{ loop.index }}"></label>
+                                            <p id="section{{ loop.index }}" class="course-detail"></p>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="instructor{{ loop.index }}"
+                                                id="instructor-label{{ loop.index }}"></label>
+                                            <p id="instructor{{ loop.index }}" class="course-detail"></p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="form-group">
-                                        <label for="crn{{ loop.index }}">Enter Course CRN</label>
-                                        {% if loop.index > 1 %}
-                                        <input type="text" class="search__input" id="crn{{ loop.index }}"
-                                            placeholder="Course CRN" pattern="[0-9]{5}" name="crn"
-                                            oninput="CourseDetail('{{ loop.index }}')" disabled>
-                                        {% else %}
-                                        <input type="text" class="search__input" id="crn{{ loop.index }}"
-                                            placeholder="Course CRN" pattern="[0-9]{5}" name="crn"
-                                            oninput="CourseDetail('{{ loop.index }}')">
-                                        {% endif %}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="title{{ loop.index }}" id="title-label{{ loop.index }}"></label>
-                                        <p id="title{{ loop.index }}" class="course-detail"></p>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="section{{ loop.index }}" id="section-label{{ loop.index }}"></label>
-                                        <p id="section{{ loop.index }}" class="course-detail"></p>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="instructor{{ loop.index }}"
-                                            id="instructor-label{{ loop.index }}"></label>
-                                        <p id="instructor{{ loop.index }}" class="course-detail"></p>
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                        </div>
+
+                        <div class="input_field">
+                            <button type="submit" name="action" value="add" class="course-name">Add Courses</button>
                         </div>
                     </div>
+            </form>
 
-                    <div class="input_field">
-                        <button type="submit" name="action" value="add" class="course-name">Add Courses</button>
-                    </div>
-                </div>
-        </form>
-
-    </main>
+        </main>

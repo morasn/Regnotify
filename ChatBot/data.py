@@ -272,7 +272,7 @@ def SemDate():
     year = date.year
     day = date.day
 
-    if (month > 1 and day > 8) and month < 3:
+    if (month >= 1 and day >= 8) and month <= 3:
         # Spring
         Semester = "Spring"
     elif month >= 12:

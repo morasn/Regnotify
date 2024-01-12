@@ -20,7 +20,9 @@ def CoursesData(Form_CRNS, start, end):
     Course_List = {}
     for course, CRNS in enumerate(Form_CRNS):
         Course_List[course] = []
-
+        # Check if CRNS is a list, if not, make it one
+        if not isinstance(CRNS, list):
+            CRNS = [CRNS]
         for i in CRNS:
             try:
                 banner = dbBanner.get(i)
@@ -33,6 +35,7 @@ def CoursesData(Form_CRNS, start, end):
                     "CRN": banner["CRN"],
                     "Days": banner["Days"],
                     "Time": banner["Time"],
+                    "Section": banner["Section"],
                 }
                 Course_List[course].append(data)
             except KeyError:
@@ -74,7 +77,7 @@ def is_same_section(course1, course2):
 
 
 def is_valid_option(course, current_schedule):
-    if course["Course_ID"] in ["RHET 1010", "Core 1010"]:
+    if course["Course_ID"] in ["RHET 1010", "CORE 1010"]:
         for scheduled_course in current_schedule:
             if scheduled_course["Course_ID"] in ["RHET 1010", "CORE 1010"]:
                 if course["Section"] != scheduled_course["Section"]:
