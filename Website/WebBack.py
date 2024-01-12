@@ -1,13 +1,9 @@
 import deta
 from datetime import datetime, timedelta
-
-# import re
 import bcrypt
 from var import departments
 
-from dotenv import load_dotenv
 
-load_dotenv()
 # Initialize the Deta project
 project = deta.Deta()
 
@@ -29,14 +25,110 @@ dbBanner = project.Base("Banner")
 # Initialize the DumpData database
 dbDumpData = project.Base("DumpData")
 
+# Initialize the Reset Password database
+dbResetPassw = project.Base("PasswordReset")
 
+
+# ====================================================================================================
+# This Section is for the Basic Functions
+# Includes the diversion to all sets of functions
 def current_time():
     time = datetime.now()
     time = time.strftime("%d/%m/%Y %H:%M:%S:%f")
     return time
 
 
-# Authenticate the user
+def CourseDataExtractor(crns: str, Semester, Year, chat_id, name):
+    row = []
+
+    for crn in crns:
+        if crn != "":
+            crn = crn.strip()
+            CustomSemester = f"{Semester}{Year}--{crn}"
+            # print(CustomSemester)
+            # To check if CRN Exists or not
+            temp = dbBanner.get(str(CustomSemester))
+            if temp == None:
+                raise RuntimeError(crn + " -Course Not Found")
+            data = {}
+
+            # Essential Variables Do not change for adding course. Again Do not change
+            data["CustomSemester"] = CustomSemester
+            data["key"] = str(current_time()) + "--" + temp["Course_ID"]
+            data["Chat_ID"] = chat_id
+
+            # Essential Vars for msg output. Again Do not change
+            data["Title"] = temp["Title"]
+            data["Course_ID"] = temp["Course_ID"]
+            data["Instructor"] = temp["Instructor"]
+            data["Section"] = temp["Section"]
+            data["Location"] = temp["Location"]
+
+            # Optional Variables that can be changed
+
+            data["Name"] = name
+            data["Semester"] = Semester
+            data["Year"] = Year
+            data["Platform"] = "Web"
+            data["CRN"] = crn
+            row.append(data)
+    return row
+
+
+def SemDate():
+    date = datetime.now()
+    month = date.month
+    year = date.year
+    day = date.day
+
+    if month > 1 and month < 3:
+        # Spring
+        Semesters = [
+            "Spring" + " " + str(year),
+            "Winter" + " " + str(year),
+        ]
+    elif month >= 11:
+        # Winter
+        year = year + 1
+        Semesters = [
+            "Winter" + " " + str(year),
+            "Spring" + " " + str(year),
+        ]
+    elif month <= 1 and day <= 8:
+        # Winter
+        Semesters = [
+            "Winter" + " " + str(year),
+            "Spring" + " " + str(year),
+        ]
+    elif (month >= 6 and day > 6) or (month <= 9 and day <= 7):
+        # Fall
+        Semesters = [
+            "Fall" + " " + str(year),
+            "Summer" + " " + str(year),
+        ]
+
+    elif (month == 5) or (month == 6 and day <= 6):
+        # Summer
+        Semesters = [
+            "Summer" + " " + str(year),
+            "Fall" + " " + str(year),
+        ]
+    else:
+        # Spring
+        Semesters = [
+            "Spring" + " " + str(year),
+            "Summer" + " " + str(year),
+            "Fall" + " " + str(year),
+            "Winter" + " " + str(year + 1),
+        ]
+    return Semesters
+
+
+# ====================================================================================================
+# This Section is for the Registration/Login Functions
+# Includes functions for reset password and registration
+
+
 def authenticate(username, password):
     # Retrieve the user's credentials from the Credentials database
     user = dbCredentials.fetch({"Username": str(username)})
@@ -62,9 +154,9 @@ def add_user(username, password, chat_id):
         password, salt = hasher(password)
         dbCredentials.put(
             {
-                "key": user["CHAT_ID"],
+                "key": user["Chat_ID"],
                 "Password": str(password),
-                "Name": user["UserName"],
+                "Name": user["Name"],
                 "Username": username,
                 "Chat_ID": chat_id,
                 "salt": salt,
@@ -76,59 +168,39 @@ def add_user(username, password, chat_id):
         return True
 
 
-# Add a new course to the Courses database
-def add_course(name, description):
-    dbCourses.put({"name": name, "description": description})
-
-
-# Delete a course from the Courses database
-def delete_course(course_id):
-    dbCourses.delete(course_id)
-
-
-# Retrieve all courses from the Courses database
-# def get_courses(chat_id):
-#     user = dbUsers.get(str(chat_id))
-#     crns = user["CRN"]
-#     if crns == None:
-#         return None
-#     CoursesData = []
-#     crns = crns.split(",")
-#     for crn in crns:
-#         course_data = dbBanner.get(crn)
-#         # Semester = str(course_data["key"]).split("--")[0]
-#         match = re.match(r"([A-Za-z]+)(\d+)(.*)", course_data["key"])
-#         if match:
-#             course_data["Semester"] = str(match.group(1)) + " " + match.group(2)
-#         CoursesData.append(course_data)
-#     return CoursesData
-
-
-def get_courses(chat_id):
-    courses = dbCourses.fetch({"Chat_ID": str(chat_id)}).items
-    print(courses)
-    if len(courses) == 0:
-        return None
-    else:
-        CourseData = []
-        for course in courses:
-            # temp = dbBanner.get(course["CustomSemester"])
-            # temp["key"] = course["key"]
-            CourseData.append(dbBanner.get(course["CustomSemester"]))
-            CourseData[-1]["key"] = course["key"]
-        return CourseData
+def ResetPassw(password, chat_id):
+    user = dbUsers.get(chat_id)
+    password, salt = hasher(password)
+    dbCredentials.put(
+        {
+            "key": user["Chat_ID"],
+            "Password": str(password),
+            "Name": user["Name"],
+            "Username": user["Username"],
+            "Chat_ID": chat_id,
+            "salt": salt,
+        }
+    )
+    dbUsers.put(user)
+    dbResetPassw.delete(chat_id)
+    return True
 
 
 # Retrieve a temporary token from the Temp database
-def get_token(token):
-    row = dbToken.fetch({"Token": str(token)})
+def get_token(token, db):
+    if db == "passw":
+        row = dbResetPassw.fetch({"Token": str(token)})
+    elif db == "reg":
+        row = dbToken.fetch({"Token": str(token)})
+    else:
+        raise RuntimeError("Incorrect Input")
 
     today = datetime.now()
 
     if row.count == 0:
         return {"auth": False}
     elif today - datetime.strptime(
-        row.items[0]["Time"], "%d/%m/%Y %H:%M:%S"
+        row.items[0]["Time"], "%d/%m/%Y %H:%M:%S:%f"
     ) > timedelta(days=1):
         auth = {
             "auth": "Old-Token",
@@ -159,54 +231,54 @@ def hasher_check(data, salt):
     return new
 
 
+# ====================================================================================================
+# This Section is for Removing courses to the DB & Listing Available Courses
+
+
+# Delete a course from the Courses database
+def delete_course(course_id):
+    dbCourses.delete(course_id)
+
+
 def DBDropCourse(key):
     dbCourses.delete(key)
     return True
 
 
-def CourseDataExtractor(crns: str, Semester, Year, chat_id, name):
-    # print(crns)
-    # crns = crns.split(",")
-    row = []
+# Delete a course from the Courses database
+def delete_course(course_id):
+    dbCourses.delete(course_id)
 
-    for crn in crns:
-        if crn != "":
-            crn = crn.strip()
-            CustomSemester = f"{Semester}{Year}--{crn}"
-            print(CustomSemester)
-            # To check if CRN Exists or not
-            temp = dbBanner.get(str(CustomSemester))
-            if temp == None:
-                raise RuntimeError(crn + " -Course Not Found")
-            data = {}
 
-            # Essential Variables Do not change for adding course. Again Do not change
-            data["CustomSemester"] = CustomSemester
-            data["key"] = str(current_time()) + "--" + temp["Course_ID"]
-            data["Chat_ID"] = chat_id
+def get_courses(chat_id):
+    courses = dbCourses.fetch({"Chat_ID": str(chat_id)}).items
+    if len(courses) == 0:
+        return None
+    else:
+        CourseData = []
+        for course in courses:
+            CourseData.append(dbBanner.get(course["CustomSemester"]))
+            CourseData[-1]["key"] = course["key"]
+        return CourseData
 
-            # Essential Vars for msg output. Again Do not change
-            data["Title"] = temp["Title"]
-            data["Course_ID"] = temp["Course_ID"]
-            data["Instructor"] = temp["Instructor"]
-            data["Section"] = temp["Section"]
-            data["Location"] = temp["Location"]
 
-            # Optional Variables that can be changed
+def DBDropCourse(key):
+    dbCourses.delete(key)
+    return True
 
-            data["Name"] = name
-            data["Semester"] = Semester
-            data["Year"] = Year
-            data["Platform"] = "Web"
-            data["CRN"] = crn
-            row.append(data)
-    return row
+
+# ====================================================================================================
+# This Section is for Adding courses to the DB
+
+
+# Add a new course to the Courses database
+def add_course(name, description):
+    dbCourses.put({"name": name, "description": description})
 
 
 def DBAddCourse(crns: str, Semester, Year, chat_id, name):
     Course_Info = CourseDataExtractor(crns, Semester, Year, chat_id, name)
     dbDumpData.put_many(Course_Info)
-    print("Done")
     for course in Course_Info:
         dbCourses.put(
             {
@@ -220,22 +292,37 @@ def DBAddCourse(crns: str, Semester, Year, chat_id, name):
     return True
 
 
-def CoursesAPI(department):
+# ====================================================================================================
+# This Section is for the Backend APIs Functions
+# Includes functions for looking up courses and departments
+
+
+def CoursesAPI(department, semester):
     Departments = departments(False)
     if department in Departments:
-        res = dbBanner.fetch({"Department": Departments[department]})
+        criteria = {
+            "Department": Departments[department],
+            "Semester": semester,
+        }
+        if department == "Rhetoric and Composition":
+            criteria["Course_ID?ne"] = "RHET 1010"
+            res = dbBanner.fetch(criteria)
+        elif department == "Core Curriculum":
+            criteria["Course_ID?ne"] = "CORE 1010"
+            res = dbBanner.fetch(criteria)
+        else:
+            res = dbBanner.fetch(criteria)
         courses = res.items
-
         # fetch until last is 'None'
         while res.last:
-            res = dbBanner.fetch(last=res.last)
+            res = dbBanner.fetch(criteria, last=res.last)
             courses += res.items
         return courses
     else:
         raise RuntimeError("Department Not Found")
 
 
-def CoreAPI(core):
+def CoreAPI(core, semester):
     Options = [
         "Pathways 1 - Sci. Encounters",
         "Humanities and Social Sciences",
@@ -244,82 +331,53 @@ def CoreAPI(core):
         "Arab World Studies - Egypt",
         "Global Studies",
         "Core Capstone",
+        "RHET 1010 & Core 1010",
     ]
     if core in Options:
-        res = dbBanner.fetch({"Category": core})
+        criteria = {
+            "Semester": str(semester).replace(" ", ""),
+        }
+
+        if core == "RHET 1010 & Core 1010":
+            Core1010Criteria = {
+                "Semester": str(semester).replace(" ", ""),
+            }
+
+            Core1010Criteria["Course_ID"] = "CORE 1010"
+            criteria["Course_ID"] = "RHET 1010"
+            res = dbBanner.fetch(Core1010Criteria)
+            Core1010 = res.items
+            while res.last:
+                res = dbBanner.fetch(Core1010Criteria, last=res.last)
+                Core1010 += res.items
+        else:
+            criteria["Category"] = core
+            Core1010 = False
+
+        res = dbBanner.fetch(criteria)
         courses = res.items
 
-        # fetch until last is 'None'
         while res.last:
-            res = dbBanner.fetch(last=res.last)
+            res = dbBanner.fetch(criteria, last=res.last)
             courses += res.items
-        return courses
+
+        return courses, Core1010
     else:
         raise RuntimeError("Department Not Found")
-
-
-def SemDate():
-    date = datetime.now()
-    month = date.month
-    year = date.year
-    day = date.day
-
-    if (month > 1 and day > 8) and month < 3:
-        # Spring
-        Semesters = [
-            "Spring" + " " + str(year),
-            "Summer" + " " + str(year),
-            "Fall" + " " + str(year),
-            "Winter" + " " + str(year + 1),
-        ]
-    elif month >= 12:
-        # Winter
-        year = year + 1
-        Semesters = [
-            "Winter" + " " + str(year),
-            "Spring" + " " + str(year),
-            "Summer" + " " + str(year),
-            "Fall" + " " + str(year),
-        ]
-    elif month <= 1 and day <= 8:
-        # Winter
-        Semesters = [
-            "Winter" + " " + str(year),
-            "Spring" + " " + str(year),
-            "Summer" + " " + str(year),
-            "Fall" + " " + str(year),
-        ]
-    elif (month >= 6 and day > 6) or (month <= 9 and day <= 7):
-        # Fall
-        Semesters = [
-            "Fall" + " " + str(year),
-            "Winter" + " " + str(year + 1),
-            "Spring" + " " + str(year + 1),
-            "Summer" + " " + str(year + 1),
-        ]
-
-    elif (month == 5) or (month == 6 and day <= 6):
-        # Summer
-        Semesters = [
-            "Summer" + " " + str(year),
-            "Fall" + " " + str(year),
-            "Winter" + " " + str(year + 1),
-            "Spring" + " " + str(year + 1),
-        ]
-
-    return Semesters
 
 
 def CRN_lookup(crn, semester):
     semester = str(semester).split(" ")
     semester = semester[0] + str(semester[1])
     key = semester + "--" + crn
-    print(key)
+    # print(key)
     course = dbBanner.get(key)
     if course == None:
         raise RuntimeError("Course Not Found")
     else:
-        msg = f'{course["Title"]} | {course["Section"]} | {course["Instructor"]}'
+        msg = {
+            "Title": course["Title"],
+            "Instructor": course["Instructor"],
+            "Section": course["Section"],
+        }
         return msg
-
-    # fetch until last is 'None'

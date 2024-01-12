@@ -14,8 +14,9 @@
 
 
 	<body>
+
 		<header>
-			<img src="{{ url_for('static', filename='images/Logo.png') }}">
+			<img src="https://codetheweb.blog/assets/img/icon2.png">
 			<nav>
 				<ul>
 					<li><a href="{{ url_for('home') }}">Home</a></li>
@@ -32,8 +33,6 @@
 			<div class="centerer">
 				<h1>Scheduler</h1>
 				<p>Choose your courses and we will generate a schedule for you.</p>
-				<p>Please note that hidden labs are not yet supported. To add a hidden lab, choose the lecture and lab
-					as two different courses selecting the section in both cases.</p>
 			</div>
 
 			<form action="" method="post" autocomplete="off">
@@ -96,8 +95,7 @@
 				<!-- Courses Column -->
 				{% for i in range(1, iter) %}
 
-				<div class="column right-column" id="course-form-{{loop.index}}" name="course-form-{{loop.index}}"
-					hidden>
+				<div class="column right-column" id="course-form-{{loop.index}}" hidden>
 
 					<h2>Course #{{loop.index}}</h2>
 					<!-- Core radio buttons -->
@@ -148,24 +146,28 @@
 						<div class="input_field">
 							<input id="Core_Course_Name{{loop.index}}" type="text" name="Course"
 								placeholder="Course Name/Title" class="search__input"
-								list="Core_Course_Selector{{loop.index}}"
-								oninput="FormControl('{{loop.index}}',1,'core')" disabled>
+								list="Core_Course_Selector{{loop.index}}" oninput="CoreCourseName('{{loop.index}}')"
+								disabled>
 							<datalist id="Core_Course_Selector{{loop.index}}">
 						</div>
 						<div class="input_field">
 							<input id="Core_Instructor{{loop.index}}" type="text" name="Instructor"
 								placeholder="Instructor Name" class="search__input"
-								list="Instructor_Selector{{loop.index}}"
-								oninput="FormControl('{{loop.index}}',2,'core')" disabled>
-							<datalist id="Instructor_Selector{{loop.index}}">
+								list="Core_Instructor_Selector{{loop.index}}" oninput="CoreInstructor('{{loop.index}}')"
+								disabled>
+							<datalist id="Core_Instructor_Selector{{loop.index}}">
 						</div>
 						<div class="input_field">
 							<input id="Core_Section{{loop.index}}" type="text" name="Section"
-								placeholder="Section Number" class="search__input" list="Section_Selector{{loop.index}}"
-								disabled oninput="FormControl('{{loop.index}}',3,'core')">
-							<datalist id="Section_Selector{{loop.index}}">
+								placeholder="Section Number" class="search__input"
+								list="Core_Section_Selector{{loop.index}}" disabled
+								oninput="CoreSection('{{loop.index}}')">
+							<datalist id="Core_Section_Selector{{loop.index}}">
 						</div>
 						<div class="input_field">
+							<input type="hidden" id="CORE{{loop.index}}" name="CRNS{{loop.index}}" value="">
+
+
 							<button type="button" name="scheduler" value="schedule" class="course-name"
 								onclick="ShowNextCourse('{{loop.index + 1}}','core')">Add Course to Schedule</button>
 							<button onclick="Clear('{{loop.index}}',0)" type="button" name="scheduler" value="schedule"
@@ -194,20 +196,20 @@
 						<div class="input_field">
 							<input id="Course_Name{{loop.index}}" type="text" name="Course"
 								placeholder="Course Name/Title" class="search__input"
-								list="Course_Selector{{loop.index}}" oninput="FormControl('{{loop.index}}',1,'Normal')"
+								list="Course_Selector{{loop.index}}" oninput="CourseNameSelector('{{loop.index}}')"
 								disabled>
 							<datalist id="Course_Selector{{loop.index}}">
 						</div>
 						<div class="input_field">
 							<input id="Instructor{{loop.index}}" type="text" name="Instructor"
 								placeholder="Instructor Name" class="search__input"
-								list="Instructor_Selector{{loop.index}}"
-								oninput="FormControl('{{loop.index}}',2,'Normal')" disabled>
+								list="Instructor_Selector{{loop.index}}" oninput="Instructor_Selector('{{loop.index}}')"
+								disabled>
 							<datalist id="Instructor_Selector{{loop.index}}">
 						</div>
 						<div class="input_field">
 							<input id="Section{{loop.index}}" type="text" name="Section" placeholder="Section Number"
-								oninput="FormControl('{{loop.index}}',3,'Normal')" class="search__input"
+								oninput="Section_Selector('{{loop.index}}')" class="search__input"
 								list="Section_Selector{{loop.index}}" disabled>
 							<datalist id="Section_Selector{{loop.index}}">
 
@@ -222,7 +224,6 @@
 				</div>
 
 				{% endfor %}
-				<input type="hidden" id="CRNS11" name="CRNS11" value="">
 			</form>
 		</main>
 

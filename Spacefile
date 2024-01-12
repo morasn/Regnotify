@@ -47,3 +47,6 @@ micros:
         - name: TOKEN
           description: Telegram Token
           default: ""
+        - name: SECRET_KEY
+          description: Flask key for cookies
+          default: ""

@@ -1,77 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scheduler</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}" />
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home2.css') }}" />
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/scheduled.css') }}" />
-    <script type="text/javascript" src="{{ url_for('static', filename='js/scheduled.js') }}"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"> </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-</head>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Scheduler</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/scheduler.css') }}" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/scheduled.css') }}" />
 
 
-<body>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/scheduled.js') }}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"> </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <header>
-        <!-- <img src="https://codetheweb.blog/assets/img/icon2.png"> -->
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('home') }}">Home</a></li>
-                <li><a href="{{ url_for('add_course') }}">Add Courses</a></li>
-                <li><a href="{{ url_for('scheduler') }}">Scheduler</a></li>
-                <li><a href="{{ url_for('about') }}">About</a></li>
-                <li><a href="{{ url_for('contact') }}">Contact</a></li>
-                <li><a href="{{ url_for('logout') }}">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
-    <br>
-    <main>
+    </head>
 
-        <div class="centerer">
-            <h1>Scheduler</h1>
-            <p>Choose your courses and we will generate a schedule for you.</p>
-        </div>
+
+    <body>
+
+        <header>
+            <img src="{{ url_for('static', filename='images/Logo.png') }}">
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('add_course') }}">Add Courses</a></li>
+                    <li><a href="{{ url_for('scheduler') }}">Scheduler</a></li>
+                    <li><a href="{{ url_for('help') }}">Help</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </nav>
+        </header>
         <br>
-        {% for schedule in schedules %}
+        <main>
 
-        {% if loop.index == 1 %}
-        <div class="container" id="Schedule{{loop.index}}">
-            <h2>Schedule #{{ loop.index }}</h2>
-
-
-            <div class="column">
-                <!-- <button class="button" onclick="showSchedule('{{ loop.index - 1 }}')">Previous Schedule</button> -->
-                <button class="course-name" onclick="DownloadSchedule('Schedule{{loop.index}}')">Download
-                    Schedule</button>
-                <button class="course-name" onclick="showSchedule('{{loop.index}}' ,'{{ loop.index + 1 }}')">Next
-                    Schedule</button>
+            <div class="centerer">
+                <h1>Scheduler</h1>
+                <p>Choose your courses and we will generate a schedule for you.</p>
             </div>
-            {% elif loop.index == schedules|length %}
-            <div class="none" id="Schedule{{loop.index}}" hidden>
+            <br>
+            {% if schedules|length == 0 %}
+            <div class="centerer">
+                <h2>No schedules found</h2>
+                <p>Try adding more courses or changing your preferences.</p>
+            </div>
+            {% endif %}
+            {% for schedule in schedules %}
+
+            {% if loop.index == 1 %}
+            <div class="container" id="Schedule{{loop.index}}">
                 <h2>Schedule #{{ loop.index }}</h2>
-                <br>
+
 
                 <div class="column">
-                    <button class="course-name"
-                        onclick="showSchedule('{{loop.index}}' ,'{{ loop.index - 1 }}')">Previous
-                        Schedule</button>
+                    <!-- <button class="button" onclick="showSchedule('{{ loop.index - 1 }}')">Previous Schedule</button> -->
                     <button class="course-name" onclick="DownloadSchedule('Schedule{{loop.index}}')">Download
                         Schedule</button>
-                    <!-- <button class="button" onclick="showSchedule('{{loop.index}}' ,'{{ loop.index + 1 }}')">Next Schedule</button> -->
+                    <button class="course-name" onclick="showSchedule('{{loop.index}}' ,'{{ loop.index + 1 }}')">Next
+                        Schedule</button>
                 </div>
-                {% else %}
-                <div class="none" id="Schedule{{loop.index}}">
+                {% elif loop.index == schedules|length %}
+                <div class="none" id="Schedule{{loop.index}}" hidden>
                     <h2>Schedule #{{ loop.index }}</h2>
-
+                    <br>
 
                     <div class="column">
                         <button class="course-name"
@@ -79,44 +74,57 @@
                             Schedule</button>
                         <button class="course-name" onclick="DownloadSchedule('Schedule{{loop.index}}')">Download
                             Schedule</button>
-                        <button class="course-name"
-                            onclick="showSchedule('{{loop.index}}' ,'{{ loop.index + 1 }}')">Next
-                            Schedule</button>
+                        <!-- <button class="button" onclick="showSchedule('{{loop.index}}' ,'{{ loop.index + 1 }}')">Next Schedule</button> -->
                     </div>
-                    {% endif %}
-                    <table class="fl-table">
-                        <thead>
-                            <tr>
-                                <th>Course Title</th>
-                                <th>Course ID</th>
-                                <th>Instructor</th>
-                                <th>CRN</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for course in schedule %}
-
-                            <tr>
-                                <td>{{ course["Title"] }}</td>
-                                <td>{{ course["Course_ID"] }}</td>
-                                <td>{{ course["Instructor"] }}</td>
-                                <td>{{ course["CRN"] }}</td>
-                                <td>{{ course["Days"] }}</td>
-                                <td>{{ course["Time"] }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    {% else %}
+                    <div class="none" id="Schedule{{loop.index}}">
+                        <h2>Schedule #{{ loop.index }}</h2>
 
 
-                </div>
+                        <div class="column">
+                            <button class="course-name"
+                                onclick="showSchedule('{{loop.index}}' ,'{{ loop.index - 1 }}')">Previous
+                                Schedule</button>
+                            <button class="course-name" onclick="DownloadSchedule('Schedule{{loop.index}}')">Download
+                                Schedule</button>
+                            <button class="course-name"
+                                onclick="showSchedule('{{loop.index}}' ,'{{ loop.index + 1 }}')">Next
+                                Schedule</button>
+                        </div>
+                        {% endif %}
+                        <table class="fl-table">
+                            <thead>
+                                <tr>
+                                    <th>Course Title</th>
+                                    <th>Course ID</th>
+                                    <th>Instructor</th>
+                                    <th>CRN</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in schedule %}
 
-                {% endfor %}
-    </main>
+                                <tr>
+                                    <td>{{ course["Title"] }}</td>
+                                    <td>{{ course["Course_ID"] }}</td>
+                                    <td>{{ course["Instructor"] }}</td>
+                                    <td>{{ course["CRN"] }}</td>
+                                    <td>{{ course["Days"] }}</td>
+                                    <td>{{ course["Time"] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
 
-</body>
+
+                    </div>
+
+                    {% endfor %}
+        </main>
+
+    </body>
 
 
 </html>

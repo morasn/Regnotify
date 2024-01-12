@@ -372,7 +372,7 @@ async def add_crn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             crns=crns,
             Semester=Semester,
             Year=Year,
-            chat_id=chat_id,
+            chat_id=update.message.chat_id,
             name=update.effective_chat.full_name,
         )
 

@@ -12,3 +12,7 @@ Manual Bot
 .env
 Migration
 dev.py
+schedule_builder copy.py
+ML
+Notifier-Sub
+Notifier-Main

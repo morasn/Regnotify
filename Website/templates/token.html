@@ -12,7 +12,9 @@
 <body>
   <div class="container">
     <h2>Enter Your 4 Digit token</h2>
-    <p>You could request the token by visiting the chatbot on t.me/regnotify_aucbot and starting a chat with the bot and
+    <p>You could request the token by visiting the chatbot on <a href="t.me/regnotify_aucbot"> Regnotify </a> and
+      starting a chat with the
+      bot and
       select "Online Token" from the options.</p>
     {% with messages = get_flashed_messages() %}
     {% if messages |count != 0 : %}
@@ -34,7 +36,7 @@
 
   </div>
   {% endwith %}
-  <script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/Token.js') }}"></script>
 
 </body>
 

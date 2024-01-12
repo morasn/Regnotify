@@ -5,17 +5,16 @@ from flask import (
     url_for,
     flash,
     redirect,
-    # make_response,
     session,
     jsonify,
 )
-
-
-# from json import dumps
+import json
 import os
+from datetime import timedelta
 from WebBack import (
     get_token,
     add_user,
+    ResetPassw,
     authenticate,
     get_courses,
     DBDropCourse,
@@ -27,13 +26,12 @@ from WebBack import (
 )
 from schedule_builder import schedule_function
 from var import departments
-
 from BotSender import CreateToken
-from datetime import timedelta
+
 
 app = Flask(__name__, template_folder="templates")
 
-app.config["SECRET_KEY"] = "os.urandom(24).hex()"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SESSION_PERMANENT"] = True
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=9999)
 
@@ -45,15 +43,8 @@ def IsLoggedIn():
         return True
 
 
-@app.route("/")
-def index():
-    try:
-        IsLoggedIn()
-        return redirect(url_for("home"))
-    except RuntimeError:
-        return redirect(url_for("login"))
-
-
+# ====================================================================================================
+# This Section is for Login/Registration/Password Reset & Token pages
 @app.route("/login/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -81,7 +72,7 @@ def login():
             return redirect(url_for("token"))
 
         elif request.form["action"] == "forget_passw":
-            return redirect(url_for("password"))
+            return redirect(url_for("PassToken"))
 
     return render_template("login.html")
 
@@ -96,7 +87,7 @@ def token():
             request.form["otp4"],
         ]
         otp = "".join(otp)
-        auth = get_token(otp)
+        auth = get_token(otp, "reg")
         if auth["auth"] == True:
             session["temp_chat_id"] = str(auth["Chat_ID"])
             session["temp_name"] = str(auth["Name"])
@@ -105,34 +96,12 @@ def token():
             return redirect(url_for("registration"))
         elif auth["auth"] == "Old-Token":
             flash("The token you entered is too old. Please enter the new token.")
-            CreateToken(str(auth["Chat_ID"]), auth["Name"])
+            CreateToken(str(auth["Chat_ID"]), auth["Name"], "reg")
             return render_template("token.html")
         else:
             flash("The token you entered is invalid. Please try again.")
             return render_template("token.html")
     return render_template("token.html")
-
-
-@app.route("/home/", methods=["GET", "POST"])
-def home():
-    try:
-        IsLoggedIn()
-    except RuntimeError:
-        return redirect(url_for("login"))
-
-    if request.method == "POST":
-        form = request.form
-        response = DBDropCourse(request.form["drop"])
-        if response == True:
-            flash("You have successfully dropped the course.")
-            return redirect(url_for("home"))
-
-    chat_id = session.get("chatid")
-    name = session.get("name")
-
-    courses = get_courses(chat_id=chat_id)
-
-    return render_template("home.html", courses=courses, name=name)
 
 
 @app.route("/registration/", methods=["GET", "POST"])
@@ -166,17 +135,96 @@ def registration():
     return render_template("registration.html")
 
 
-@app.route("/password/", methods=["GET", "POST"])
-def forget_passw():
+@app.route("/PassToken/", methods=["GET", "POST"])
+def PassToken():
     if request.method == "POST":
-        username = request.form["username"]
-        if username == "":
-            flash("Please enter your username.")
-            return render_template("password.html")
+        otp = [
+            request.form["otp1"],
+            request.form["otp2"],
+            request.form["otp3"],
+            request.form["otp4"],
+        ]
+        otp = "".join(otp)
+        auth = get_token(otp, "passw")
+        if auth["auth"] == True:
+            session["temp_chat_id"] = str(auth["Chat_ID"])
+            session["temp_name"] = str(auth["Name"])
+            session.permanent = True
+
+            return redirect(url_for("NewPassword"))
+        elif auth["auth"] == "Old-Token":
+            flash(
+                "The token you entered is too old. Please enter the new token sent on your telegram."
+            )
+            CreateToken(str(auth["Chat_ID"]), auth["Name"], "passw")
+            return render_template("password_token.html")
         else:
-            # CreateToken(username)
-            return redirect(url_for("token.html"))
-    return render_template("password.html")
+            flash("The token you entered is invalid. Please try again.")
+            return render_template("password_token.html")
+    return render_template("password_token.html")
+
+
+@app.route("/NewPassword/", methods=["GET", "POST"])
+def NewPassword():
+    if request.method == "POST":
+        password = request.form["password"]
+        conf_password = request.form["confirm-password"]
+        if password != conf_password:
+            flash("The passwords you entered do not match. Please try again.")
+            return render_template("new_password.html")
+        else:
+            response = ResetPassw(password, session.get("temp_chat_id"))
+            if response == True:
+                session["chatid"] = session.get("temp_chat_id")
+                session["name"] = session.get("temp_name")
+                session.permanent = True
+
+                session.pop("temp_chat_id", None)
+                session.pop("temp_name", None)
+
+                flash("You have successfully changed your password.")
+                return redirect(url_for("home"))
+            else:
+                flash(
+                    "The username you entered is already taken. Please try again with a different username."
+                )
+                return render_template("new_password.html")
+
+    return render_template("new_password.html")
+
+
+# ====================================================================================================
+# This Section is for the Main Pages in the Website (Home/Logout/Contact/Help ...)
+
+
+@app.route("/")
+def index():
+    try:
+        IsLoggedIn()
+        return redirect(url_for("home"))
+    except RuntimeError:
+        return redirect(url_for("login"))
+
+
+@app.route("/home/", methods=["GET", "POST"])
+def home():
+    try:
+        IsLoggedIn()
+    except RuntimeError:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        response = DBDropCourse(request.form["drop"])
+        if response:
+            flash("You have successfully dropped the course.")
+            return redirect(url_for("home"))
+
+    chat_id = session.get("chatid")
+    name = session.get("name")
+
+    courses = get_courses(chat_id=chat_id)
+
+    return render_template("home.html", courses=courses, name=name)
 
 
 @app.route("/logout/")
@@ -193,6 +241,20 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/help/")
+def help():
+    return render_template("help.html")
+
+
+@app.route("/contact/")
+def contact():
+    return render_template("contact.html")
+
+
+# ====================================================================================================
+# This Section is for the Scheduler.html page
+
+
 @app.route("/scheduler/", methods=["GET", "POST"])
 def scheduler():
     if request.method == "POST":
@@ -201,13 +263,14 @@ def scheduler():
             crns = request.form.getlist("CRNS" + str(i))
             for crn in crns:
                 if crn != "":
-                    CRNS.append(crn)
+                    CRNS.append(json.loads(crn))
 
         if len(CRNS) == 0:
             flash("Please enter at least one CRN.")
             return render_template(
                 "scheduler.html", departments=departments(True), iter=12
             )
+
         schedules = schedule_function(
             CRNS, start_time=request.form["StartTime"], end_time=request.form["EndTime"]
         )
@@ -215,9 +278,46 @@ def scheduler():
         return render_template("scheduled.html", schedules=schedules)
     else:
         api_path = f"https://{os.getenv('DETA_SPACE_APP_HOSTNAME')}"
+        semesters = SemDate()
         return render_template(
-            "scheduler.html", departments=departments(True), iter=12, api_path=api_path
+            "scheduler.html",
+            departments=departments(True),
+            iter=12,
+            semesters=semesters,
+            api_path=api_path,
         )
+
+
+@app.route("/scheduler/courses/", methods=["GET"])
+def get_department_courses():
+    try:
+        department = request.args.get("department").replace("----", "&")
+        Semester = request.args.get("semester").replace(" ", "")
+        print(Semester)
+        print(department)
+        courses = [
+            course for course in CoursesAPI(department=department, semester=Semester)
+        ]
+        return jsonify(courses)
+    except RuntimeError:
+        return jsonify({"error": "Invalid department."}), 400
+
+
+@app.route("/scheduler/core/", methods=["GET"])
+def get_core_courses():
+    try:
+        core = request.args.get("core").replace("----", "&")
+        semester = request.args.get("semester")
+        semester = semester.replace(" ", "")
+        # courses = [course for course in CoreAPI(core=core, semester=semester)]
+        courses, Core1010 = CoreAPI(core=core, semester=semester)
+        return jsonify(courses, Core1010)
+    except RuntimeError:
+        return jsonify({"error": "Invalid department."}), 400
+
+
+# ====================================================================================================
+# This Section is for the Add.html page
 
 
 @app.route("/add/", methods=["GET", "POST"])
@@ -242,46 +342,12 @@ def add_course():
     return render_template("add.html", semesters=semesters, api_path=api_path)
 
 
-@app.route("/scheduler/courses/", methods=["GET"])
-def get_department_courses():
-    try:
-        department = request.args.get("department")
-        courses = [course for course in CoursesAPI(department=department)]
-        return jsonify(courses)
-    except RuntimeError:
-        return jsonify({"error": "Invalid department."}), 400
-
-
-@app.route("/scheduler/core/", methods=["GET"])
-def get_core_courses():
-    try:
-        core = request.args.get("core")
-        courses = [course for course in CoreAPI(core=core)]
-        return jsonify(courses)
-    except RuntimeError:
-        return jsonify({"error": "Invalid department."}), 400
-
-
 @app.route("/add/crn/", methods=["GET"])
 def crn_lookup():
     try:
         crn = request.args.get("crn")
         semester = request.args.get("semester")
         msg = CRN_lookup(crn=crn, semester=semester)
-        return msg
+        return jsonify(msg)
     except RuntimeError:
         return jsonify({"error": "Invalid CRN."}), 400
-
-
-@app.route("/about/")
-def about():
-    return render_template("about.html")
-
-
-@app.route("/contact/")
-def contact():
-    return render_template("contact.html")
-
-
-if __name__ == "__main__":
-    app.run(debug=True, port=3000)

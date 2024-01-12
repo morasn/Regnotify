@@ -1,11 +1,11 @@
 anyio==3.6.2
-fastapi==0.89.1
-python-telegram-bot==20.0
+fastapi
+python-telegram-bot==20.5
 oauthlib==3.2.0
 pytz>=2018.6
 cachetools~=5.2.1
-APScheduler~=3.9.1 
-httpx ~= 0.23.3
-python-telegram-bot[job-queue]==20.0
+APScheduler~=3.10.4 
+httpx ~= 0.24.1
+python-telegram-bot[job-queue]==20.5
 deta
 uvicorn[standard]

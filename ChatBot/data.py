@@ -245,13 +245,15 @@ def Alt_Course_Finder(day, time, category):
         msg = ""
         alt = ""
         alt_count = 0
-        for index, course in enumerate(Courses):
-            if course["Remaining"] == 0:
+        index = 0
+        for course in Courses:
+            if int(course["Remaining"]) == 0:
                 txt = f"""{alt_count + 1 }. {course["Title"]} - {course["Course_ID"]} with {course["Instructor"]} and CRN {course["CRN"]}."""
                 alt_count += 1
                 alt = alt + txt + "\n\n"
                 continue
             txt = f"""{index + 1 }. {course["Title"]} - {course["Course_ID"]} with {course["Instructor"]} and CRN {course["CRN"]} has currently {course["Remaining"]} places available."""
+            index += 1
             msg = msg + txt + "\n\n"
         if msg == "":
             msg = f"Sorry. I can not find any courses any {category} course at the requested time.\n However, these are all the courses that are available in that period.\n\n {alt}"

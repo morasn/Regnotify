@@ -1,124 +1,4 @@
-* {
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-}
-
-
-body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: #e0e0e0;
-    /* background-image: "{{ url_for('static', filename='css/') }}"; */
-    background-position: center;
-    background-repeat: repeat;
-    background-size: 7%;
-    background-color: #fff;
-    overflow-x: hidden;
-    transition: all 200ms linear;
-}
-
-h1 {
-    font-size: 32px;
-    color: #121212;
-    text-align: left;
-    text-indent: 1px;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    /* margin-bottom: 20px; */
-}
-
-h2 {
-    font-size: 28px;
-    color: #121212;
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-h4 {
-    font-size: 20px;
-    color: #121212;
-}
-
-p {
-    font-size: 16px;
-    color: #525252;
-    margin-top: 0px;
-    text-align: center;
-    margin-bottom: 7px;
-}
-
-main {
-    width: 90%;
-    height: auto;
-    padding: 30px 30px;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    /* justify-content: center; */
-    /* align-items: center; */
-    border-radius: 15px;
-}
-
-
-/* Header Styles */
-header img {
-    height: 80px;
-    margin-left: 40px;
-}
-
-body {
-    height: 125vh;
-    background-image: url('/static/images/Background.jpg');
-    background-size: cover;
-    font-family: sans-serif;
-    margin-top: 80px;
-    padding: 30px;
-}
-
-
-header {
-    background-color: white;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 0 25px 0 black;
-}
-
-header * {
-    display: inline;
-}
-
-header li {
-    margin: 20px;
-}
-
-header li a {
-    color: black;
-    text-decoration: none;
-}
-
-button {
-    border: none;
-    cursor: pointer;
-    appearance: none;
-    background-color: inherit;
-    transition: transform .7s ease-in-out;
-    margin-left: 10px;
-
-}
-
-
-
 /* Table Styles */
-
 .fl-table {
     width: 100%;
     margin: 0 auto;
@@ -137,7 +17,6 @@ button {
 
 .fl-table th {
     background-color: #f5f5f5;
-    text-align: left;
 }
 
 .fl-table tbody tr:nth-child(even) {
@@ -148,143 +27,53 @@ button {
     background-color: #ddd;
 }
 
-/* Style the add course button */
-.add-course {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 10px 20px;
+.table_content_align {
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin-top: 20px;
-    cursor: pointer;
 }
 
-.add-course:hover {
-    background-color: #3e8e41;
-}
-
-.tab a:hover {
-    background-color: #f5f5f5;
-}
-
-.tab a+a {
-    margin-left: 20px;
-}
-
-.fl-table tbody tr:not(:last-child) {
-    margin-bottom: 10px;
-}
-
-.fl-table td:last-child {
-    margin-left: 10px;
-}
-
-.no-courses {
-    font-size: 24px;
+table input {
+    width: 92%;
     color: #525252;
-    text-align: center;
-    margin-top: 50px;
-}
-
-.add-course {
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.3s;
-}
-
-.add-course:hover {
-    background-color: #3e8e41;
-}
-
-.confirm {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 6px 12px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
     font-size: 16px;
-    border-radius: 5px;
+    padding: 10px 0;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    background: #e9d585;
+    transition: all 0.2s ease;
 }
 
-
-.confirm:hover {
-    background-color: #3e8e41;
+table input.active {
+    background: #ffcc00;
+    pointer-events: auto;
+    color: #000000;
 }
 
-/* Add a media query for screens smaller than 600px */
-@media (max-width: 600px) {
+table input:hover {
+    background: #e6b801;
+}
 
-    /* Adjust the font sizes */
-    h1 {
-        font-size: 36px;
+/* Media Queries for Mobile and Tablets */
+@media only screen and (max-width: 767px) {
+
+    .fl-table {
+        font-size: 0.8em;
+        min-width: none;
+
     }
 
-    h2 {
-        font-size: 24px;
+    table input {
+        font-size: 0.9em;
+    }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1024px) {
+
+    .fl-table {
+        /* font-size: 0.8em; */
+        min-width: none;
+
     }
 
-    h4 {
-        font-size: 18px;
-    }
-
-    p {
-        font-size: 14px;
-    }
-
-    /* Adjust the header and tab styles */
-    .header {
-        height: 80px;
-    }
-
-    .tab {
-        padding: 10px 10px;
-        width: 100%;
-    }
-
-    /* Adjust the main styles */
-    main {
-        padding: 20px 10px;
-    }
-
-    /* Adjust the table styles */
-    .fl-table td,
-    .fl-table th {
-        padding: 6px;
-    }
-
-    .fl-table th {
-        font-size: 14px;
-    }
-
-    .fl-table tbody tr:nth-child(even) {
-        background-color: transparent;
-    }
-
-    .fl-table tbody tr:not(:last-child) {
-        margin-bottom: 5px;
-    }
-
-    .fl-table td:last-child {
-        margin-left: 5px;
-    }
-
-    /* Adjust the "No courses registered" message */
-    .no-courses {
-        font-size: 18px;
-        margin-top: 30px;
-    }
-
-    /* Adjust the "Add Course" button */
-    .add-course {
-        font-size: 14px;
-        margin-top: 10px;
-        padding: 8px 16px;
-    }
 }

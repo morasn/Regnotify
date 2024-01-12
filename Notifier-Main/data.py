@@ -95,6 +95,7 @@ def BannerRetriever(subjects):
                         "Notes": course_notes,
                         "Course_ID": course_id,
                         "Category": course_category,
+                        "Semester": Sem.replace("--", ""),
                     }
                 )
     return course_dict
@@ -107,7 +108,8 @@ def Semcode():
     day = date.day
 
     if (
-        (month == 1 and day >= 13 and day <= 24)
+        (month == 1 and day == 7)
+        or (month == 1 and day >= 10 and day <= 24)
         or (month == 1 and day >= 29)
         or (month == 2 and day <= 8)
     ):
@@ -137,21 +139,23 @@ def Semcode():
         Sem = f"Summer{year}--"
     else:
         raise Exception("Not a regestration Period..!!")
-
     return Sem, SemesterCode
 
 
-def StatsUpdate(departments, Semster):
+def StatsUpdate(departments):
+    Sem, Semester = Semcode()
+    Sem = Sem.replace("--", "")
     deta = Deta()
     db = deta.Base("Stats")
     data = []
     for department in departments:
         data.append(
             {
-                "key": Semster + "---" + department,
+                "key": Sem + "---" + department,
                 "Department": department,
-                "Semester": Semster,
+                "Semester": Sem,
                 "Time": datetime.now().strftime("%d/%m/%Y %H:%M:%S:%f"),
             }
         )
-    db.put_many(data)
+    for i in range(0, len(data), 25):
+        db.put_many(data[i : i + 25])

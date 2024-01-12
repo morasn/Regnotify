@@ -87,7 +87,6 @@ def sender():
 
     print("CRON Sent to Notifier Successfully")
 
-
 def last_updated():
     project = Deta()
     stats = project.Base("Time")

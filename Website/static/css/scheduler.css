@@ -1,0 +1,380 @@
+.main {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: column;
+	/* columns: 2; */
+	width: 100%;
+	background: none;
+
+}
+
+.column {
+	/* display: flex; */
+	float: left;
+	padding: 20px;
+	box-sizing: border-box;
+	/* flex-wrap: wrap; */
+	flex-direction: column;
+	/* align-items: center;
+    align-content: center;
+    text-align: center; */
+	justify-content: center;
+	align-items: center;
+	/* align-content: center; */
+	width: 100%;
+	margin-bottom: 15px;
+}
+
+.centerer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	/* align-content: center; */
+	text-align: center;
+	/* justify-content: center; */
+	width: 100%;
+	margin-bottom: 15px;
+}
+
+.course_schedule {
+	/* display: flex; */
+	/* flex-direction: column; */
+	width: 100%;
+	text-align: center;
+	align-items: center;
+	align-content: center;
+	justify-content: center;
+}
+
+.input_field {
+	align-items: center;
+	align-content: center;
+	text-align: center;
+	justify-content: center;
+	width: 100%;
+	margin-bottom: 15px;
+}
+
+button {
+	background-color: #626663;
+	border: none;
+	color: white;
+	padding: 10px 20px;
+	text-align: center;
+	text-decoration: none;
+}
+
+button:hover {
+	background-color: #4CAF50;
+
+
+}
+
+.course-name {
+	/* position: relative; */
+	/* display: flex;
+    flex-wrap: wrap; */
+	border-radius: 0.5rem;
+	background-color: rgba(51, 65, 85, 1);
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+
+	width: 80%;
+	font-size: 16px;
+	align-items: center;
+	align-content: center;
+	text-align: center;
+	align-self: center;
+	height: 40px;
+	padding: 0.7rem 1rem;
+	border-radius: 30px;
+	border-radius: 0.5rem;
+	/* margin-top: auto; */
+	/* margin-block-start: 1rem; */
+	margin-top: 15px;
+	margin-bottom: 0px;
+	transition: all ease-in-out .5s;
+	text-overflow: clip;
+	white-space: nowrap;
+}
+
+.clear {
+	/* position: relative; */
+	/* display: flex;
+    flex-wrap: wrap; */
+	border-radius: 0.5rem;
+	background-color: rgb(163, 49, 49);
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+
+	width: 80%;
+	font-size: 16px;
+	align-items: center;
+	align-content: center;
+	text-align: center;
+	align-self: center;
+	height: 40px;
+	padding: 0.7rem 1rem;
+	border-radius: 30px;
+	border-radius: 0.5rem;
+	/* margin-top: auto; */
+	/* margin-block-start: 1rem; */
+	margin-top: 15px;
+	margin-bottom: 0px;
+	transition: all ease-in-out .5s;
+	text-overflow: clip;
+	white-space: nowrap;
+}
+
+.schedule-submit {
+	/* position: relative; */
+	/* display: flex;
+    flex-wrap: wrap; */
+	border-radius: 0.5rem;
+	background-color: rgb(28, 99, 14);
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+
+	width: 80%;
+	font-size: 16px;
+	align-items: center;
+	align-content: center;
+	text-align: center;
+	align-self: center;
+	height: 40px;
+	padding: 0.7rem 1rem;
+	border-radius: 30px;
+	border-radius: 0.5rem;
+	/* margin-top: auto; */
+	/* margin-block-start: 1rem; */
+	margin-top: 15px;
+	margin-bottom: 0px;
+	transition: all ease-in-out .5s;
+}
+
+form {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+}
+
+.search__input select {
+	margin-bottom: 15px;
+	text-align: center;
+}
+
+.search__input label {
+	margin-bottom: 15px;
+}
+
+
+/* Radio Button */
+
+.radio-inputs {
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	border-radius: 0.5rem;
+	background-color: #EEE;
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+	padding: 0.25rem;
+	width: 80%;
+	font-size: 14px;
+	text-align: center;
+}
+
+.radio-inputs .radio {
+	flex: 1 1 auto;
+	text-align: center;
+}
+
+.radio-inputs .radio input {
+	display: none;
+}
+
+.radio-inputs .radio .name {
+	display: flex;
+	cursor: pointer;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.5rem;
+	border: none;
+	padding: .5rem 0;
+	color: rgba(51, 65, 85, 1);
+	transition: all .15s ease-in-out;
+}
+
+.radio-inputs .radio input:checked+.name {
+	background-color: #fff;
+	font-weight: 600;
+}
+
+/* Search Button */
+.search {
+	display: flex;
+	position: relative;
+	justify-content: space-between;
+	text-align: center;
+	width: 80%;
+	border-radius: 0.5rem;
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+	padding: 0.25rem;
+
+}
+
+.search__input {
+	font-family: inherit;
+	font-size: inherit;
+	background-color: #f4f2f2;
+	border: none;
+	color: #646464;
+	padding: 0.7rem 1rem;
+	border-radius: 30px;
+	border-radius: 0.5rem;
+	/* width: 12em; */
+	transition: all ease-in-out .5s;
+	/* margin-right: -2rem; */
+	width: 80%;
+	align-items: center;
+	align-content: center;
+	align-self: center;
+}
+
+.search__input:hover,
+.search__input:focus {
+	box-shadow: 0 0 1em #00000013;
+}
+
+.search__input:focus {
+	outline: none;
+	background-color: #f0eeee;
+}
+
+.search__input::-webkit-input-placeholder {
+	font-weight: 100;
+	color: #ccc;
+}
+
+.search__input:focus+.search__button {
+	background-color: #f0eeee;
+}
+
+.search__button {
+	border: none;
+	background-color: #f4f2f2;
+	margin-top: .1em;
+}
+
+.search__button:hover {
+	cursor: pointer;
+}
+
+.search__icon {
+	height: 1.3em;
+	width: 1.3em;
+	fill: #b4b4b4;
+}
+
+.autocomplete-items {
+	position: flex;
+	border: 1px solid #d4d4d4;
+	border-bottom: none;
+	border-top: none;
+	z-index: 99;
+	/*position the autocomplete items to be the same width as the container:*/
+	top: 100%;
+	left: 0;
+	right: 0;
+}
+
+.autocomplete-items div {
+	padding: 10px;
+	cursor: pointer;
+	background-color: #fff;
+	border-bottom: 1px solid #d4d4d4;
+}
+
+.autocomplete-items div:hover {
+	/*when hovering an item:*/
+	background-color: #e9e9e9;
+}
+
+.autocomplete-active {
+	/*when navigating through the items using the arrow keys:*/
+	background-color: DodgerBlue !important;
+	color: #ffffff;
+}
+
+/* for the table on the add page */
+.add_table table {
+	align-self: center;
+	align-items: center;
+	align-content: center;
+	width: 90%;
+	margin: 0 auto;
+	border-collapse: collapse;
+}
+
+.add_table td {
+	width: 50%;
+	padding: 10px;
+}
+
+/* for incorrect crns when inputted in the add page */
+.search__input_error {
+	font-family: inherit;
+	font-size: inherit;
+	background-color: #c05959;
+	border: none;
+	color: #f0ecec;
+	padding: 0.7rem 1rem;
+	border-radius: 30px;
+	border-radius: 0.5rem;
+	/* width: 12em; */
+	transition: all ease-in-out .5s;
+	/* margin-right: -2rem; */
+	width: 80%;
+	align-items: center;
+	align-content: center;
+	align-self: center;
+}
+
+/* For mobile phones and small screens: */
+@media only screen and (max-width: 600px) {
+
+	.course-name,
+	.search__input {
+		width: 100%;
+		font-size: 14px;
+		/* Adjust font size */
+		padding: 0.7rem 1rem;
+		border-radius: 10px;
+		/* Adjust border-radius for a rounded appearance */
+		margin-top: 10px;
+		/* Adjust margin-top for spacing */
+	}
+
+	.search__input:hover,
+	.search__input:focus {
+		box-shadow: 0 0 1em #00000013;
+	}
+
+	.search__input:focus {
+		outline: none;
+		background-color: #f0eeee;
+	}
+
+	.search__input::-webkit-input-placeholder {
+		font-weight: 100;
+		color: #ccc;
+	}
+
+	.search__input:focus+.search__button {
+		background-color: #f0eeee;
+	}
+
+	/* Adjust specific styles for smaller screens as needed */
+
+}
