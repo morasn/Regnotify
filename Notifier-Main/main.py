@@ -1,35 +1,28 @@
-from data import DBReader, BannerRetriever, StatsUpdate
+from data import BannerRetriever, DBReader, Semcode, StatsUpdate, get_application
 from fastapi import FastAPI, Request
+import asyncio
 from deta import Deta
-from telegram import Bot
-import os
 
 
 # import json
 
 app = FastAPI()
 
-
-# @app.post("/notifier")
-def get_application():
-    BotToken = os.getenv("TOKEN")
-
-    application = Bot(BotToken)
-    return application
+bot = get_application()
 
 
-# bot = get_application()
-
-
-@app.post("/")
+@app.post("/A")
 async def actions(req: Request):
     data = await req.json()
-    deta = Deta()
+    print(f"Notifier Received from Server Successfully for (A) {data}")
+    # await Notifier(data)
 
+    Sem, SemesterCode = Semcode()
+    deta = Deta()
     BannerDB = deta.Base("Banner")
 
-    OldDB = DBReader("Banner", None)
-    NewDB = BannerRetriever(data)
+    OldDB = DBReader("Banner", {"key?pfx": Sem})
+    NewDB = BannerRetriever(data, Sem, SemesterCode)
 
     old_db_dict = {old_dict["key"]: old_dict for old_dict in OldDB}
     new_db_changed = []
@@ -63,4 +56,13 @@ async def actions(req: Request):
         for c in range(0, len(new_db_changed), 25):
             BannerDB.put_many(new_db_changed[c : c + 25])
     StatsUpdate(data)
-    print("Notifier Sent to Users Successfully")
+    print(f"Notifier Sent to Users Successfully for (A) {data}")
+    return {"message": data}
+
+
+# @app.post("/B")
+# async def actions(req: Request):
+#     data = await req.json()
+#     print(f"Notifier Received from Server Successfully for (B) {data}")
+#     await Notifier(data)
+#     print(f"Notifier Sent to Users Successfully for (B) {data} ")

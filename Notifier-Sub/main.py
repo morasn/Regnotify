@@ -33,3 +33,9 @@ async def CustomSemester(req: Request):
         api_data["Course_ID"],
     )
     return data
+
+
+@app.get("/ForceUpdate")
+def ForceUpdate():
+    sender()
+    return "Sent Successfully!"

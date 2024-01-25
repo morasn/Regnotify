@@ -336,6 +336,10 @@ def add_course():
         except RuntimeError:
             flash("Please enter a valid CRN.")
             return redirect(url_for("home"))
+    try:
+        IsLoggedIn()
+    except RuntimeError:
+        return redirect(url_for("login"))
 
     semesters = SemDate()
     api_path = f"https://{os.getenv('DETA_SPACE_APP_HOSTNAME')}"

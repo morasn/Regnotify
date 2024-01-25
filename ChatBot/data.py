@@ -135,7 +135,6 @@ def CourseDataExtractor(crns: str, Semester, Year, chat_id, name):
         data["Location"] = temp["Location"]
 
         # Optional Variables that can be changed
-
         data["Name"] = name
         data["Semester"] = Semester
         data["Year"] = Year

@@ -3,10 +3,55 @@ from requests.structures import CaseInsensitiveDict
 from bs4 import BeautifulSoup
 from deta import Deta
 from datetime import datetime
+from telegram import Bot
+import os
+import asyncio
+
+deta = Deta()
+
+
+def Semcode():
+    date = datetime.now()
+    month = date.month
+    year = date.year
+    day = date.day
+
+    if (
+        (month == 1 and day == 7)
+        or (month == 1 and day >= 10 and day <= 24)
+        or (month == 1 and day >= 29)
+        or (month == 2 and day <= 8)
+    ):
+        # Spring
+        SemesterCode = str(year) + "20"
+        Sem = f"Spring{year}--"
+    elif month == 12 and day >= 10 and day <= 14:
+        # Winter
+        SemesterCode = str(year + 1) + "15"
+        Sem = f"Winter{year+1}--"
+    elif month == 1 and day <= 3:
+        # Winter
+        SemesterCode = str(year) + "15"
+        Sem = f"Winter{year}--"
+    elif (
+        (month == 6 and day >= 13 and day < 27)
+        or (month == 8 and day >= 28)
+        or (month == 9 and day < 8)
+    ):
+        # Fall
+        SemesterCode = str(year + 1) + "10"
+        Sem = f"Fall{year}--"
+
+    elif (month >= 5 and day < 20) and (month == 6 and day <= 6):
+        # Summer
+        SemesterCode = str(year) + "30"
+        Sem = f"Summer{year}--"
+    else:
+        raise Exception("Not a regestration Period..!!")
+    return Sem, SemesterCode
 
 
 def DBReader(db, criteria):
-    deta = Deta()
     db = deta.Base(db)
     res = db.fetch(criteria)
     CoursesDB = res.items
@@ -19,9 +64,7 @@ def DBReader(db, criteria):
     return CoursesDB
 
 
-def BannerRetriever(subjects):
-    Sem, SemesterCode = Semcode()
-
+def BannerRetriever(subjects, Sem, SemesterCode):
     url = "https://ssb-prod.ec.aucegypt.edu/PROD/crse_submit.submit_proc"
 
     headers = CaseInsensitiveDict()
@@ -101,47 +144,6 @@ def BannerRetriever(subjects):
     return course_dict
 
 
-def Semcode():
-    date = datetime.now()
-    month = date.month
-    year = date.year
-    day = date.day
-
-    if (
-        (month == 1 and day == 7)
-        or (month == 1 and day >= 10 and day <= 24)
-        or (month == 1 and day >= 29)
-        or (month == 2 and day <= 8)
-    ):
-        # Spring
-        SemesterCode = str(year) + "20"
-        Sem = f"Spring{year}--"
-    elif month == 12 and day >= 10 and day <= 14:
-        # Winter
-        SemesterCode = str(year + 1) + "15"
-        Sem = f"Winter{year+1}--"
-    elif month == 1 and day <= 3:
-        # Winter
-        SemesterCode = str(year) + "15"
-        Sem = f"Winter{year}--"
-    elif (
-        (month == 6 and day >= 13 and day < 27)
-        or (month == 8 and day >= 28)
-        or (month == 9 and day < 8)
-    ):
-        # Fall
-        SemesterCode = str(year + 1) + "10"
-        Sem = f"Fall{year}--"
-
-    elif (month >= 5 and day < 20) and (month == 6 and day <= 6):
-        # Summer
-        SemesterCode = str(year) + "30"
-        Sem = f"Summer{year}--"
-    else:
-        raise Exception("Not a regestration Period..!!")
-    return Sem, SemesterCode
-
-
 def StatsUpdate(departments):
     Sem, Semester = Semcode()
     Sem = Sem.replace("--", "")
@@ -159,3 +161,51 @@ def StatsUpdate(departments):
         )
     for i in range(0, len(data), 25):
         db.put_many(data[i : i + 25])
+
+
+def get_application():
+    BotToken = os.getenv("TOKEN")
+
+    application = Bot(BotToken)
+    return application
+
+
+async def Notifier(data):
+    Sem, SemesterCode = Semcode()
+    BannerDB = deta.Base("Banner")
+
+    OldDB = DBReader("Banner", {"Department": data})
+    NewDB = BannerRetriever(data, Sem, SemesterCode)
+
+    old_db_dict = {old_dict["key"]: old_dict for old_dict in OldDB}
+    new_db_changed = []
+    new_db_added = []
+
+    bot = get_application()
+    async with bot:
+        for new_dict in NewDB:
+            old_dict = old_db_dict.get(new_dict["key"])
+            if old_dict is None:
+                new_db_added.append(new_dict)
+            elif str(old_dict["Remaining"]) != str(new_dict["Remaining"]):
+                new_db_changed.append(new_dict)
+                chat_ids = DBReader("Courses", criteria={"CRN": new_dict["CRN"]})
+
+                if chat_ids is not None:
+                    for chat_id in chat_ids:
+                        if int(new_dict["Remaining"]) == 0:
+                            msg = f"""Unfortunately there are no seats remaining in the course {new_dict["Title"]} ({new_dict["Course_ID"]}) with section number {new_dict["Section"]} . However, there is still hope do not worry."""
+                        else:
+                            msg = f"""{new_dict["Remaining"]} Seats are now available in the course {new_dict["Title"]} ({new_dict["Course_ID"]}) with the instructor {new_dict["Instructor"]} and section number {new_dict["Section"]}. Hurry up to reserve the course.
+                CRN is {new_dict["CRN"]} """
+                        try:
+                            await bot.send_message(chat_id=chat_id["Chat_ID"], text=msg)
+                        except Exception as e:
+                            print(e)
+                            pass
+        for m in range(0, len(new_db_added), 25):
+            BannerDB.put_many(new_db_added[m : m + 25])
+
+        for c in range(0, len(new_db_changed), 25):
+            BannerDB.put_many(new_db_changed[c : c + 25])
+    StatsUpdate(data)
