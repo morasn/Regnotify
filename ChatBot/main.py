@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from telegram import Update
 import os
 
+
 BotToken = os.getenv("TOKEN")
 application = get_application(BotToken)
 

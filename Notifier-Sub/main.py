@@ -1,30 +1,43 @@
-from fastapi import FastAPI, Request
-from back import db_stats, sender, last_updated
+from flask import Flask, request
+from back import db_stats, sender, last_updated, User_stats, Banner_stats, Courses_stats
 from custom_semester import BannerRetriever
 
-app = FastAPI()
+app = Flask(__name__)
 
 
-@app.post("/__space/v0/actions")
+@app.route("/__space/v0/actions", methods=["POST"])
 def actions():
-    sender()
+    event = request.get_json()
+    if event["event"]["id"] == "Notifier":
+        sender()
+        return {"Done": event["event"]["id"]}
+    elif event["event"]["id"] == "UserStats":
+        User_stats()
+        return {"Done": event["event"]["id"]}
+    elif event["event"]["id"] == "BannerStats":
+        Banner_stats()
+        return {"Done": event["event"]["id"]}
+    elif event["event"]["id"] == "CoursesStats":
+        Courses_stats()
+        return {"Done": event["event"]["id"]}
 
 
-@app.get("/stats")
+@app.route("/stats", methods=["GET"])
 def stats():
     data = db_stats()
     return data
 
 
-@app.get("/last_updated")
+@app.route("/last_updated", methods=["GET"])
 def last_updated_send():
+    print("Last Updated")
     data = last_updated()
     return data
 
 
-@app.get("/CustomSemester")
-async def CustomSemester(req: Request):
-    api_data = await req.json()
+@app.route("/CustomSemester", methods=["POST"])
+async def CustomSemester():
+    api_data = await request.get_json()
 
     data = BannerRetriever(
         api_data["Subject"],
@@ -35,7 +48,7 @@ async def CustomSemester(req: Request):
     return data
 
 
-@app.get("/ForceUpdate")
+@app.route("/ForceUpdate", methods=["GET"])
 def ForceUpdate():
     sender()
     return "Sent Successfully!"

@@ -1,51 +1,9 @@
-import os
 from requests import post
 from json import dumps
 from deta import Deta
 from datetime import datetime
 
 project = Deta()
-
-
-# def Semcode():
-#     date = datetime.now()
-#     month = date.month
-#     year = date.year
-#     day = date.day
-
-#     if (
-#         (month == 1 and day == 7)
-#         or (month == 1 and day >= 10 and day <= 24)
-#         or (month == 1 and day >= 29)
-#         or (month == 2 and day <= 8)
-#     ):
-#         # Spring
-#         SemesterCode = str(year) + "20"
-#         Sem = f"Spring{year}--"
-#     elif month == 12 and day >= 10 and day <= 14:
-#         # Winter
-#         SemesterCode = str(year + 1) + "15"
-#         Sem = f"Winter{year+1}--"
-#     elif month == 1 and day <= 3:
-#         # Winter
-#         SemesterCode = str(year) + "15"
-#         Sem = f"Winter{year}--"
-#     elif (
-#         (month == 6 and day >= 13 and day < 27)
-#         or (month == 8 and day >= 28)
-#         or (month == 9 and day < 8)
-#     ):
-#         # Fall
-#         SemesterCode = str(year + 1) + "10"
-#         Sem = f"Fall{year}--"
-
-#     elif (month >= 5 and day < 20) and (month == 6 and day <= 6):
-#         # Summer
-#         SemesterCode = str(year) + "30"
-#         Sem = f"Summer{year}--"
-#     else:
-#         raise Exception("Not a regestration Period..!!")
-#     return Sem, SemesterCode
 
 
 def sender():
@@ -149,57 +107,127 @@ def sender():
     print("CRON Sent to Notifier Successfully")
 
 
-def last_updated():
-    stats = project.Base("Stats")
-    data = stats.fetch().items
+def fetch_all_data(db):
+    base = project.Base(db)
+    res = base.fetch()
+    data = res.items
+    while res.last:
+        res = base.fetch(last=res.last)
+        data += res.items
     return data
 
 
-def db_stats():
-    users_db = project.Base("Users")
-    res = users_db.fetch()
-    users_data = res.items
-    while res.last:
-        res = users_db.fetch(last=res.last)
-        users_data += res.items
+def last_updated():
+    data = fetch_all_data("DB_Update_Time")
+    return data
+
+
+def User_stats():
+    users_data = fetch_all_data("Users")
     num_users = len(users_data)
     web_users = len([i for i in users_data if i["Username"] != None])
     telegram_users = len([i for i in users_data if i["Username"] == None])
+    db = project.Base("Stats")
+    db.put_many(
+        [
+            {
+                "key": "Num_Users",
+                "Category": "Total Number of User",
+                "Value": num_users,
+                "Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            },
+            {
+                "key": "Web_Users",
+                "Category": "Web_Users",
+                "Value": web_users,
+                "Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            },
+            {
+                "key": "Telegram_Users",
+                "Category": "Telegram_Users",
+                "Value": telegram_users,
+                "Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            },
+        ]
+    )
 
-    # Registered Courses
-    courses_db = project.Base("Courses")
-    res = courses_db.fetch()
-    courses_data = res.items
-    while res.last:
-        res = courses_db.fetch(last=res.last)
-        courses_data += res.items
+    return {"Done"}
 
+
+def Courses_stats():
+    courses_data = fetch_all_data("Courses")
     num_courses = len(courses_data)
+    db = project.Base("Stats")
+    db.put(
+        {
+            "key": "Num_Courses",
+            "Category": "Total Number of Courses",
+            "Value": num_courses,
+            "Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
+    return {"Done"}
 
-    Semesters = {}
-    for course in courses_data:
-        try:
-            Semesters[str(course["CustomSemester"]).split("--")[0]] += 1
-        except:
-            Semesters[str(course["CustomSemester"]).split("--")[0]] = 1
 
+def Banner_stats():
     # Banner Courses
-    banner_db = project.Base("Banner")
-    res = banner_db.fetch()
-    banner_data = res.items
-    while res.last:
-        res = banner_db.fetch(last=res.last)
-        banner_data += res.items
+    banner_data = fetch_all_data("Banner")
     num_banner_courses = len(banner_data)
 
+    Semesters = {}
+    for banner in banner_data:
+        try:
+            Semesters[str(banner["Semester"]).split("--")[0]] += 1
+        except:
+            Semesters[str(banner["Semester"]).split("--")[0]] = 1
+
     # Last Updated
-    Unique_Semesters = Semesters.keys()
-    last_updated_db = project.Base("Stats")
-    res = last_updated_db.fetch()
-    last_updated_data = res.items
-    while res.last:
-        res = last_updated_db.fetch(last=res.last)
-        last_updated_data += res.items
+    Unique_Semesters = list(Semesters.keys())
+
+    db = project.Base("Stats")
+    db.put_many(
+        [
+            {
+                "key": "Num_Banner_Courses",
+                "Category": "Num_Banner_Courses",
+                "Value": num_banner_courses,
+                "Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            },
+            {
+                "key": "Num_Courses_Per_Semester",
+                "Category": "Num_Courses_Per_Semester",
+                "Value": Semesters,
+                "Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            },
+            {
+                "key": "Unique_Semesters",
+                "Category": "Unique_Semesters",
+                "Value": Unique_Semesters,
+                "Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            },
+        ]
+    )
+
+
+def db_stats():
+    Stats = fetch_all_data("Stats")
+    for stat in Stats:
+        if stat["key"] == "Num_Users":
+            num_users = stat["Value"]
+        elif stat["key"] == "Web_Users":
+            web_users = stat["Value"]
+        elif stat["key"] == "Telegram_Users":
+            telegram_users = stat["Value"]
+        elif stat["key"] == "Num_Courses":
+            num_courses = stat["Value"]
+        elif stat["key"] == "Num_Banner_Courses":
+            num_banner_courses = stat["Value"]
+        elif stat["key"] == "Num_Courses_Per_Semester":
+            Semesters = stat["Value"]
+        elif stat["key"] == "Unique_Semesters":
+            Unique_Semesters = stat["Value"]
+
+    last_updated_data = fetch_all_data("DB_Update_Time")
     latest_update = {}
     for i in last_updated_data:
         if str(i["Semester"]).split("--")[0] in Unique_Semesters:
@@ -218,5 +246,4 @@ def db_stats():
         "Total_Banner_Courses": num_banner_courses,
         "Latest_Update": latest_update,
     }
-    # payload = dumps(data)
     return data

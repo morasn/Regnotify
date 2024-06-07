@@ -11,6 +11,8 @@ from data import (
     IsWebUser,
     GetUsername,
     ResetPasswordToken,
+    db_stats,
+    get_user_details,
 )
 import time
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
@@ -24,7 +26,7 @@ from telegram.ext import (
     ContextTypes,
 )
 from telegram.constants import ChatAction
-
+import os
 
 (
     SERVICE,
@@ -41,7 +43,11 @@ from telegram.constants import ChatAction
     ALT_CATEGORY,
     ALT_DAY,
     ALT_TIME,
-) = range(14)
+    ADMIN_COMMANDS,
+    ADMIN_COMMANDS_CONT,
+    ADMIN_SEND_MESSAGE_SELECT_RECEPIENT,
+    ADMIN_SEND_MESSAGE,
+) = range(18)
 
 
 # ====================================================================================================
@@ -62,10 +68,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             ["Add Course(s)"],
             ["Drop Course(s)"],
             ["Alternative Core Course"],
+            ["Web Portal"],
         ]
 
     except RuntimeError:
-        reply_keyboard = [["Add Course(s)"], ["Alternative Core Course"]]
+        reply_keyboard = [
+            ["Add Course(s)"],
+            ["Alternative Core Course"],
+            ["Web Portal"],
+        ]
 
     finally:
         msg = f"""Aloha {name}!
@@ -89,6 +100,7 @@ To know more about the bot's privacy policy, select /privacy."""
 
 async def service(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     service_choice = update.message.text
+    global chat_id
     if service_choice == "Add Course(s)":
         global Year
         global Semester
@@ -180,6 +192,29 @@ async def service(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             ),
         )
         return ALT_CATEGORY
+    elif service_choice == "Web Portal":
+        if IsWebUser(chat_id=chat_id):
+            msg = "Please select your service from the list."
+            reply_keyboard = [["Get Username"], ["Reset Password"]]
+            await context.bot.send_chat_action(
+                chat_id=chat_id, action=ChatAction.TYPING
+            )
+            time.sleep(1)
+            await update.message.reply_text(
+                msg,
+                reply_markup=ReplyKeyboardMarkup(
+                    reply_keyboard,
+                    one_time_keyboard=True,
+                    input_field_placeholder="Service",
+                ),
+            )
+            return WEB_SERVICE
+        else:
+            chat_id = str(update.message.chat_id)
+            name = update.effective_chat.full_name
+            msg = AddLogin(chat_id=chat_id, name=name)
+            await update.message.reply_text(msg, reply_markup=ReplyKeyboardRemove())
+            return ConversationHandler.END
 
     else:
         await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -685,6 +720,73 @@ To start the chat again, press /start"""
     return ConversationHandler.END
 
 
+async def admin_signin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    msg = "Please enter admin password"
+    await update.message.reply_text(msg, reply_markup=ReplyKeyboardRemove())
+    return ADMIN_COMMANDS
+
+
+async def admin_commands(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    passw = os.environ.get("ADMIN_PASSWORD")
+    response = update.message.text
+    if passw == response:
+        msg = "Please select your service from the list."
+        reply_keyboard = [["Send Message"], ["Stats & Logs"]]
+        await update.message.reply_text(
+            msg,
+            reply_markup=ReplyKeyboardMarkup(
+                reply_keyboard,
+                one_time_keyboard=True,
+                input_field_placeholder="Service",
+            ),
+        )
+        return ADMIN_COMMANDS_CONT
+    else:
+        msg = "Incorrect Password. Please try"
+        await update.message.reply_text(msg, reply_markup=ReplyKeyboardRemove())
+        return SERVICE
+
+
+async def admin_commands_cont(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    response = update.message.text
+    if response == "Send Message":
+        msg = "Please enter the recepient of the message."
+        await update.message.reply_text(msg, reply_markup=ReplyKeyboardRemove())
+        return ADMIN_SEND_MESSAGE_SELECT_RECEPIENT
+    elif response == "Stats & Logs":
+        msg = db_stats()
+        await update.message.reply_text(msg, reply_markup=ReplyKeyboardRemove())
+        return ConversationHandler.END
+
+
+async def admin_send_message_select_recepient(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    global recepient
+    recepient = update.message.text
+    user = get_user_details(chat_id=recepient)
+    msg = f"{str(user)} \n\nPlease enter the message you want to send"
+    await update.message.reply_text(msg, reply_markup=ReplyKeyboardRemove())
+    return ADMIN_SEND_MESSAGE
+
+
+async def admin_send_message(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    msg = update.message.text
+    if recepient == "all":
+        users = IsWebUser()
+        for user in users:
+            await context.bot.send_message(chat_id=user, text=msg)
+    else:
+        await context.bot.send_message(chat_id=recepient, text=msg)
+    msg = "Message sent successfully"
+    await update.message.reply_text(msg, reply_markup=ReplyKeyboardRemove())
+    return ConversationHandler.END
+
+
 # ====================================================================================================
 
 
@@ -842,6 +944,8 @@ def get_application(BotToken: str):
             CommandHandler("contact", contact),
             CommandHandler("token", token),
             CommandHandler("privacy", privacy),
+            CommandHandler("web", web),
+            CommandHandler("admin", admin_signin),
         ],
         states={
             SERVICE: [MessageHandler((~filters.COMMAND), service)],
@@ -871,6 +975,21 @@ def get_application(BotToken: str):
             ],
             ALT_DAY: [MessageHandler(filters.TEXT & (~filters.COMMAND), alt_day)],
             ALT_TIME: [MessageHandler(filters.TEXT & (~filters.COMMAND), alt_time)],
+            ADMIN_COMMANDS: [
+                MessageHandler(filters.TEXT & (~filters.COMMAND), admin_commands)
+            ],
+            ADMIN_COMMANDS_CONT: [
+                MessageHandler(filters.TEXT & (~filters.COMMAND), admin_commands_cont)
+            ],
+            ADMIN_SEND_MESSAGE_SELECT_RECEPIENT: [
+                MessageHandler(
+                    filters.TEXT & (~filters.COMMAND),
+                    admin_send_message_select_recepient,
+                )
+            ],
+            ADMIN_SEND_MESSAGE: [
+                MessageHandler(filters.TEXT & (~filters.COMMAND), admin_send_message)
+            ],
         },
         fallbacks=[
             CommandHandler("end", end),
@@ -881,6 +1000,7 @@ def get_application(BotToken: str):
             CommandHandler("token", token),
             CommandHandler("privacy", privacy),
             CommandHandler("web", web),
+            CommandHandler("admin", admin_signin),
         ],
         allow_reentry=True,
     )

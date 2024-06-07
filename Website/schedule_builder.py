@@ -8,38 +8,53 @@ project = deta.Deta()
 dbBanner = project.Base("Banner")
 
 
-def schedule_function(Form_CRNS, start_time, end_time):
+def schedule_function(Form_CRNS, HiddenLabsIndex, start_time, end_time):
     Course_List = CoursesData(Form_CRNS, start_time, end_time)
+    Course_List = HiddenLabAdjustment(Course_List, HiddenLabsIndex)
     schedule_options = find_schedule_options(Course_List)
     random.shuffle(schedule_options)
     selected_schedules = schedule_options[:50]
     return selected_schedules
 
 
+def HiddenLabAdjustment(Courses_List, HiddenLabsIndex):
+
+    j = len(Courses_List) - 1
+    Final_List = {}
+    for i in Courses_List:
+        CourseData = Courses_List[i]
+        if i in HiddenLabsIndex:
+            j += 1
+            Final_List[j] = [
+                Course for Course in CourseData if int(Course["Section"]) >= 60
+            ]
+            Final_List[i] = [
+                Course for Course in CourseData if int(Course["Section"]) < 60
+            ]
+        else:
+            Final_List[i] = CourseData
+    return Final_List
+
+
 def CoursesData(Form_CRNS, start, end):
     Course_List = {}
     for course, CRNS in enumerate(Form_CRNS):
-        Course_List[course] = []
-        # Check if CRNS is a list, if not, make it one
         if not isinstance(CRNS, list):
             CRNS = [CRNS]
-        for i in CRNS:
-            try:
-                banner = dbBanner.get(i)
-                if not time_filter(start, end, banner["Time"]):
-                    continue
-                data = {
-                    "Title": banner["Title"],
-                    "Course_ID": banner["Course_ID"],
-                    "Instructor": banner["Instructor"],
-                    "CRN": banner["CRN"],
-                    "Days": banner["Days"],
-                    "Time": banner["Time"],
-                    "Section": banner["Section"],
-                }
-                Course_List[course].append(data)
-            except KeyError:
-                pass
+        banners = [dbBanner.get(i) for i in CRNS]
+        Course_List[course] = [
+            {
+                "Title": banner["Title"],
+                "Course_ID": banner["Course_ID"],
+                "Instructor": banner["Instructor"],
+                "CRN": banner["CRN"],
+                "Days": banner["Days"],
+                "Time": banner["Time"],
+                "Section": banner["Section"],
+            }
+            for banner in banners
+            if time_filter(start, end, banner["Time"])
+        ]
     return Course_List
 
 

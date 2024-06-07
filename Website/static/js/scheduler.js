@@ -148,6 +148,7 @@ function SaveAPI(data, i, core, courseNameInput) {
 
 }
 
+
 async function CoreAPI(i) {
 
 	Clear(i, 1);
@@ -174,33 +175,6 @@ async function CoreAPI(i) {
 			const data = await response.json();
 			const list1 = data[0];
 			SaveAPI(list1, i, core, courseNameInput)
-			// const courseNames = data.map(course => course.Title);
-			// const CRNS = data.map(course => course.key);
-			// const instructors = data.map(course => course.Instructor);
-			// const sections = data.map(course => course.Section);
-			// const times = data.map(course => course.Time);
-			// const days = data.map(course => course.Days);
-
-			// const uniqueCourseNames = [...new Set(courseNames)];
-			// courseNameInput.disabled = false;
-			// courseNameInput.required = false;
-
-			// for (index in uniqueCourseNames) {
-			// 	optionBuilder(uniqueCourseNames[index], "Core_Course_Selector" + i);
-			// }
-
-			// const ShownSection = sections.map((element, index) => {
-			// 	return `Section ${element} ${days[index]} ${times[index]}`;
-			// });
-			// const HiddenCRN = document.getElementById("CRNS" + i);
-
-			// HiddenCRN.setAttribute("value", JSON.stringify(CRNS));
-
-			// localStorage.setItem(`CRNS-${core}`, JSON.stringify(CRNS));
-			// localStorage.setItem(`CourseNames-${core}`, JSON.stringify(courseNames));
-			// localStorage.setItem(`Instructors-${core}`, JSON.stringify(instructors));
-			// localStorage.setItem(`Sections-${core}`, JSON.stringify(ShownSection));
-			// localStorage.setItem(`time-${core}`, JSON.stringify(now.getTime())); // store time of localStorage update
 
 		}
 		if (core === "RHET 1010 & Core 1010" && response.status === 200) {

@@ -1,6 +1,6 @@
 from datetime import datetime
 from deta import Deta
-import os
+
 
 project = Deta()
 
@@ -177,8 +177,9 @@ def AddLogin(chat_id, name):
     UserRow = IsWebUser(chat_id)
     if UserRow == False:
         token = CreateToken(chat_id, name, dbToken)
-        msg = f"""Your temporary token is {token}.
-Please add it on --- to complete the registration process."""
+        msg = f""" It seems you are not registered.
+Please head to our website https://regnotify.onrender.com/token/ and enter the token below to complete the registration process.
+Your Token: {token}"""
         return msg
     else:
         msg = "You are already registered. If you wish to get your Username or reset your Password, select /Web"
@@ -191,7 +192,7 @@ def GetUsername(chat_id):
         msg = "You are not registered. Please register first."
         return msg
     else:
-        msg = f"Your username is {User['Username']}."
+        msg = f"Your username is {User['Username']}. You can login on https://regnotify.onrender.com/login/"
         return msg
 
 
@@ -203,7 +204,8 @@ def ResetPasswordToken(chat_id):
     else:
         dbPasswordReset = project.Base("PasswordReset")
         token = CreateToken(chat_id, User["Name"], dbPasswordReset)
-        msg = f"""Your temporary token is {token}.
+        msg = f"""Your temporary token is {token}. Please head to our website https://regnotify.onrender.com/PassToken/ and enter the token below to reset your password.
+
 Note: It will expire in 24 hours."""
         return msg
 
@@ -274,13 +276,12 @@ def SemDate():
     if (month >= 1 and day >= 8) and month <= 3:
         # Spring
         Semester = "Spring"
-    elif month >= 12:
+
+    elif month >= 12 or (month <= 1 and day <= 8):
         # Winter
         year = year + 1
         Semester = "Winter"
-    elif month <= 1 and day <= 8:
-        # Winter
-        Semester = "Winter"
+
     elif (month >= 6 and day > 6) or (month <= 9 and day <= 7):
         # Fall
         Semester = "Fall"
@@ -288,6 +289,67 @@ def SemDate():
     elif (month == 5) or (month == 6 and day <= 6):
         # Summer
         Semester = "Summer"
+
     else:
         raise RuntimeError("Auto Semester Detection Failed")
     return Semester, year
+
+
+# ====================================================================================================
+
+
+# ====================================================================================================
+### The Functions below are used for Admin Panel
+def fetch_all_data(db):
+    base = project.Base(db)
+    res = base.fetch()
+    data = res.items
+    while res.last:
+        res = base.fetch(last=res.last)
+        data += res.items
+    return data
+
+
+def db_stats():
+    Stats = fetch_all_data("Stats")
+    for stat in Stats:
+        if stat["key"] == "Num_Users":
+            num_users = stat["Value"]
+        elif stat["key"] == "Web_Users":
+            web_users = stat["Value"]
+        elif stat["key"] == "Telegram_Users":
+            telegram_users = stat["Value"]
+        elif stat["key"] == "Num_Courses":
+            num_courses = stat["Value"]
+        elif stat["key"] == "Num_Banner_Courses":
+            num_banner_courses = stat["Value"]
+        elif stat["key"] == "Num_Courses_Per_Semester":
+            Semesters = stat["Value"]
+        elif stat["key"] == "Unique_Semesters":
+            Unique_Semesters = stat["Value"]
+
+    last_updated_data = fetch_all_data("DB_Update_Time")
+    latest_update = {}
+    for i in last_updated_data:
+        if str(i["Semester"]).split("--")[0] in Unique_Semesters:
+            try:
+                if i["Time"] < latest_update[str(i["Semester"]).split("--")[0]]:
+                    latest_update[str(i["Semester"]).split("--")[0]] = i["Time"]
+            except:
+                latest_update[str(i["Semester"]).split("--")[0]] = i["Time"]
+
+    data = {
+        "Total_Num_Users": num_users,
+        "Web_Users": web_users,
+        "Telegram_Only_Users": telegram_users,
+        "Total_Courses_Registered": num_courses,
+        "Num_Courses_Per_Semester": Semesters,
+        "Total_Banner_Courses": num_banner_courses,
+        "Latest_Update": latest_update,
+    }
+    return str(data)
+
+
+def get_user_details(chat_id):
+    user = dbUsers.get(chat_id)
+    return user

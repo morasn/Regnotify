@@ -6,10 +6,15 @@ micros:
     engine: python3.9
     public: true
     path: webhook
+    run: uvicorn main:app
+    dev: .venv/bin/uvicorn main:app --reload
     presets:
       env:
         - name: TOKEN
           description: Telegram Token
+          default: ""
+        - name: ADMIN_PASSWORD
+          description: Password for admin panel
           default: ""
     # public_routes:
     #   - "/webhook/*"
@@ -20,17 +25,33 @@ micros:
     engine: python3.9
     public: true
     path: external
+    # run: uvicorn main:app
+    # dev: .venv/bin/uvicorn main:app --reload
     actions:
-      - id: "DBReader"
-        name: "DB Reader"
+      - id: "Notifier"
+        name: "Notifier"
         trigger: "schedule"
         default_interval: "0/15 * * * *"
+      - id: "UserStats"
+        name: "UserStats"
+        trigger: "schedule"
+        default_interval: "0/59 * * * *"
+      - id: "BannerStats"
+        name: "BannerStats"
+        trigger: "schedule"
+        default_interval: "0/30 * * * *"
+      - id: "CoursesStats"
+        name: "CoursesStats"
+        trigger: "schedule"
+        default_interval: "0/30 * * * *"
 
   - name: Notifier-Main
     src: ./Notifier-Main/
     engine: python3.9
     public: true
     path: notifier
+    run: uvicorn main:app
+    dev: .venv/bin/uvicorn main:app --reload
     presets:
       env:
         - name: TOKEN

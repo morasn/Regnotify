@@ -1,10 +1,6 @@
 from data import BannerRetriever, DBReader, Semcode, StatsUpdate, get_application
 from fastapi import FastAPI, Request
-import asyncio
 from deta import Deta
-
-
-# import json
 
 app = FastAPI()
 
@@ -14,8 +10,7 @@ bot = get_application()
 @app.post("/A")
 async def actions(req: Request):
     data = await req.json()
-    print(f"Notifier Received from Server Successfully for (A) {data}")
-    # await Notifier(data)
+    print(f"Notifier Received from Server Successfully for {data}")
 
     Sem, SemesterCode = Semcode()
     deta = Deta()
@@ -58,11 +53,3 @@ async def actions(req: Request):
     StatsUpdate(data)
     print(f"Notifier Sent to Users Successfully for (A) {data}")
     return {"message": data}
-
-
-# @app.post("/B")
-# async def actions(req: Request):
-#     data = await req.json()
-#     print(f"Notifier Received from Server Successfully for (B) {data}")
-#     await Notifier(data)
-#     print(f"Notifier Sent to Users Successfully for (B) {data} ")

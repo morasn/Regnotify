@@ -8,4 +8,4 @@ APScheduler~=3.10.4
 httpx ~= 0.24.1
 python-telegram-bot[job-queue]
 deta
-uvicorn[standard]
+uvicorn

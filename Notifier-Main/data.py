@@ -5,7 +5,6 @@ from deta import Deta
 from datetime import datetime
 from telegram import Bot
 import os
-import asyncio
 
 deta = Deta()
 
@@ -33,16 +32,16 @@ def Semcode():
         # Winter
         SemesterCode = str(year) + "15"
         Sem = f"Winter{year}--"
-    elif (
-        (month == 6 and day >= 13 and day < 27)
-        or (month == 8 and day >= 28)
-        or (month == 9 and day < 8)
+    elif ((month == 6 and day >= 22) or (month == 7 and day <= 4)) or (
+        (month == 8 and day >= 26) or (month == 9 and day <= 6)
     ):
         # Fall
         SemesterCode = str(year + 1) + "10"
         Sem = f"Fall{year}--"
 
-    elif (month >= 5 and day < 20) and (month == 6 and day <= 6):
+    elif (month >= 5 and day >= 13 and day <= 21) or (
+        month == 6 and day >= 3 and day <= 6
+    ):
         # Summer
         SemesterCode = str(year) + "30"
         Sem = f"Summer{year}--"
@@ -68,9 +67,9 @@ def BannerRetriever(subjects, Sem, SemesterCode):
     url = "https://ssb-prod.ec.aucegypt.edu/PROD/crse_submit.submit_proc"
 
     headers = CaseInsensitiveDict()
-    headers[
-        "Accept"
-    ] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+    headers["Accept"] = (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+    )
     headers["Content-Type"] = "application/x-www-form-urlencoded"
 
     # Subjects = []
@@ -148,7 +147,7 @@ def StatsUpdate(departments):
     Sem, Semester = Semcode()
     Sem = Sem.replace("--", "")
     deta = Deta()
-    db = deta.Base("Stats")
+    db = deta.Base("DB_Update_Time")
     data = []
     for department in departments:
         data.append(

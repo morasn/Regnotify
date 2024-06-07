@@ -1,4 +1,4 @@
-fastapi
-requests==2.28.1
+flask
+requests
 deta
 beautifulsoup4

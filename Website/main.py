@@ -258,13 +258,17 @@ def contact():
 @app.route("/scheduler/", methods=["GET", "POST"])
 def scheduler():
     if request.method == "POST":
-        CRNS = []
-        for i in range(1, 12):
-            crns = request.form.getlist("CRNS" + str(i))
-            for crn in crns:
-                if crn != "":
-                    CRNS.append(json.loads(crn))
-
+        CRNS = [
+            json.loads(crn)
+            for i in range(1, 12)
+            for crn in request.form.getlist("CRNS" + str(i))
+            if crn != ""
+        ]
+        HiddenLabIndex = [
+            i - 1
+            for i in range(1, 12)
+            if request.form.get("HiddenLab" + str(i)) == "on"
+        ]
         if len(CRNS) == 0:
             flash("Please enter at least one CRN.")
             return render_template(
@@ -272,7 +276,10 @@ def scheduler():
             )
 
         schedules = schedule_function(
-            CRNS, start_time=request.form["StartTime"], end_time=request.form["EndTime"]
+            CRNS,
+            HiddenLabIndex,
+            start_time=request.form["StartTime"],
+            end_time=request.form["EndTime"],
         )
 
         return render_template("scheduled.html", schedules=schedules)
@@ -293,11 +300,10 @@ def get_department_courses():
     try:
         department = request.args.get("department").replace("----", "&")
         Semester = request.args.get("semester").replace(" ", "")
-        print(Semester)
-        print(department)
-        courses = [
-            course for course in CoursesAPI(department=department, semester=Semester)
-        ]
+        # courses = [
+        #     course for course in CoursesAPI(department=department, semester=Semester)
+        # ]
+        courses = CoursesAPI(department=department, semester=Semester)
         return jsonify(courses)
     except RuntimeError:
         return jsonify({"error": "Invalid department."}), 400
