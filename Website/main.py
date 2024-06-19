@@ -348,6 +348,7 @@ def add_course():
         return redirect(url_for("login"))
 
     semesters = SemDate()
+
     api_path = f"https://{os.getenv('DETA_SPACE_APP_HOSTNAME')}"
     return render_template("add.html", semesters=semesters, api_path=api_path)
 

@@ -143,8 +143,8 @@ def BannerRetriever(subjects, Sem, SemesterCode):
     return course_dict
 
 
-def StatsUpdate(departments):
-    Sem, Semester = Semcode()
+def StatsUpdate(departments,Sem):
+    
     Sem = Sem.replace("--", "")
     deta = Deta()
     db = deta.Base("DB_Update_Time")

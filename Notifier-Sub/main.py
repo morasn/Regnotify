@@ -50,5 +50,13 @@ async def CustomSemester():
 
 @app.route("/ForceUpdate", methods=["GET"])
 def ForceUpdate():
-    sender()
+    sender(None,None)
+    return "Sent Successfully!"
+
+@app.route("/ManualUpdate", methods=["GET"])
+def ManualUpdate():
+    Sem = request.args.get('Sem')
+    SemesterCode = request.args.get('SemesterCode')
+    sender(Sem=Sem, SemesterCode=SemesterCode)
+    
     return "Sent Successfully!"

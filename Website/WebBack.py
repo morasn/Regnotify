@@ -85,7 +85,7 @@ def SemDate():
         # Spring
         Semesters = [
             "Spring" + " " + str(year),
-            # "Winter" + " " + str(year),
+
         ]
     elif month >= 11:
         # Winter
@@ -104,7 +104,6 @@ def SemDate():
         # Fall
         Semesters = [
             "Fall" + " " + str(year),
-            "Summer" + " " + str(year),
         ]
 
     elif (month == 5) or (month == 6 and day <= 6):
@@ -114,7 +113,7 @@ def SemDate():
             "Fall" + " " + str(year),
         ]
     else:
-        # Spring
+        # All Other Options
         Semesters = [
             "Spring" + " " + str(year),
             "Summer" + " " + str(year),

@@ -6,7 +6,7 @@ from datetime import datetime
 project = Deta()
 
 
-def sender():
+def sender(Sem,SemesterCode):
     # Sem, Semester = Semcode()
     Subjects = [
         "ACCT",
@@ -76,34 +76,36 @@ def sender():
         "ARTV",
     ]
 
-    # last_updated_db = project.Base("Stats")
-    # res = last_updated_db.fetch()
-    # last_updated_data = res.items
+    if Sem is None:
+        
+        z = 8  # Number of subjects to send at a time
+        for m in range(0, len(Subjects), z):
+            try:
+                payload = dumps(Subjects[m : m + z])
+                print(payload)
+                res = post(
+                    "https://regnotifyfinal-1-b1004847.deta.app/notifier/A",
+                    data=payload,
+                    timeout=0.9,
+                )
 
-    # while res.last:
-    #     res = last_updated_db.fetch(last=res.last)
-    #     last_updated_data += res.items
+            except:
+                pass
+    else:
+        z = 8  # Number of subjects to send at a time
+        for m in range(0, len(Subjects), z):
+            try:
+                data = {"Sem": Sem, "SemesterCode": SemesterCode, "data": Subjects[m : m + z]}
+                payload = dumps(data)
+                print(payload)
+                res = post(
+                    "https://regnotifyfinal-1-b1004847.deta.app/notifier/ManualUpdate",
+                    data=payload,
+                    timeout=0.9,
+                )
 
-    z = 8  # Number of subjects to send at a time
-    for m in range(0, len(Subjects), z):
-        try:
-            payload = dumps(Subjects[m : m + z])
-            print(payload)
-            res = post(
-                "https://regnotifyfinal-1-b1004847.deta.app/notifier/A",
-                data=payload,
-                timeout=0.9,
-            )
-
-            # payload = dumps(Subjects[m + z : m + 2 * z])
-            # res = post(
-            #     "https://regnotifyfinal-1-b1004847.deta.app/notifier/B",
-            #     data=payload,
-            #     timeout=0.75,
-            # )
-        except:
-            pass
-
+            except:
+                pass
     print("CRON Sent to Notifier Successfully")
 
 

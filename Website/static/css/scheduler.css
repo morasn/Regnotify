@@ -9,18 +9,13 @@
 }
 
 .column {
-	/* display: flex; */
 	float: left;
 	padding: 20px;
 	box-sizing: border-box;
-	/* flex-wrap: wrap; */
 	flex-direction: column;
-	/* align-items: center;
-    align-content: center;
-    text-align: center; */
 	justify-content: center;
 	align-items: center;
-	/* align-content: center; */
+
 	width: 100%;
 	margin-bottom: 15px;
 }
@@ -29,9 +24,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	/* align-content: center; */
 	text-align: center;
-	/* justify-content: center; */
 	width: 100%;
 	margin-bottom: 15px;
 }
@@ -71,9 +64,6 @@ button:hover {
 }
 
 .course-name {
-	/* position: relative; */
-	/* display: flex;
-    flex-wrap: wrap; */
 	border-radius: 0.5rem;
 	background-color: rgba(51, 65, 85, 1);
 	box-sizing: border-box;
@@ -89,8 +79,6 @@ button:hover {
 	padding: 0.7rem 1rem;
 	border-radius: 30px;
 	border-radius: 0.5rem;
-	/* margin-top: auto; */
-	/* margin-block-start: 1rem; */
 	margin-top: 15px;
 	margin-bottom: 0px;
 	transition: all ease-in-out .5s;
@@ -99,9 +87,6 @@ button:hover {
 }
 
 .clear {
-	/* position: relative; */
-	/* display: flex;
-    flex-wrap: wrap; */
 	border-radius: 0.5rem;
 	background-color: rgb(163, 49, 49);
 	box-sizing: border-box;
@@ -117,8 +102,7 @@ button:hover {
 	padding: 0.7rem 1rem;
 	border-radius: 30px;
 	border-radius: 0.5rem;
-	/* margin-top: auto; */
-	/* margin-block-start: 1rem; */
+
 	margin-top: 15px;
 	margin-bottom: 0px;
 	transition: all ease-in-out .5s;
@@ -127,9 +111,7 @@ button:hover {
 }
 
 .schedule-submit {
-	/* position: relative; */
-	/* display: flex;
-    flex-wrap: wrap; */
+
 	border-radius: 0.5rem;
 	background-color: rgb(28, 99, 14);
 	box-sizing: border-box;
@@ -145,8 +127,7 @@ button:hover {
 	padding: 0.7rem 1rem;
 	border-radius: 30px;
 	border-radius: 0.5rem;
-	/* margin-top: auto; */
-	/* margin-block-start: 1rem; */
+
 	margin-top: 15px;
 	margin-bottom: 0px;
 	transition: all ease-in-out .5s;
@@ -158,14 +139,15 @@ form {
 	width: 100%;
 }
 
-.search__input select {
+.search__input select label {
 	margin-bottom: 15px;
 	text-align: center;
 }
 
-.search__input label {
-	margin-bottom: 15px;
+.search__input option {
+	text-align: center;
 }
+
 
 
 /* Radio Button */
@@ -283,7 +265,6 @@ form {
 	border-bottom: none;
 	border-top: none;
 	z-index: 99;
-	/*position the autocomplete items to be the same width as the container:*/
 	top: 100%;
 	left: 0;
 	right: 0;
